@@ -1,17 +1,10 @@
 import pdfplumber
-import fitz  # PyMuPDF
+import fitz  
 
-
-# -------------------------------
-# 1. BASIC EXTRACTION (FAST PATH)
-# -------------------------------
 def extract_basic(page):
     return page.extract_text() or ""
 
 
-# -------------------------------
-# 2. TWO-COLUMN EXTRACTION
-# -------------------------------
 def extract_two_column(page):
     width = page.width
 
@@ -24,9 +17,6 @@ def extract_two_column(page):
     return left_text + "\n" + right_text
 
 
-# -------------------------------
-# 3. COLUMN DETECTION HEURISTIC
-# -------------------------------
 def is_two_column(page):
     words = page.extract_words()
     if not words:
@@ -40,9 +30,6 @@ def is_two_column(page):
     return spread > page.width * 0.6
 
 
-# -------------------------------
-# 4. PDFPLUMBER MAIN EXTRACTION
-# -------------------------------
 def extract_with_pdfplumber(pdf_path):
     text = ""
 
@@ -63,9 +50,6 @@ def extract_with_pdfplumber(pdf_path):
     return text.strip()
 
 
-# -------------------------------
-# 5. PYMUPDF BLOCK EXTRACTION (FALLBACK)
-# -------------------------------
 def extract_with_pymupdf_blocks(pdf_path):
     text = ""
 
@@ -89,9 +73,6 @@ def extract_with_pymupdf_blocks(pdf_path):
     return text.strip()
 
 
-# -------------------------------
-# 6. FINAL HYBRID FUNCTION
-# -------------------------------
 def extract_text(pdf_path):
     """
     Unified extraction pipeline:
@@ -101,7 +82,6 @@ def extract_text(pdf_path):
 
     text = extract_with_pdfplumber(pdf_path)
 
-    # Fallback condition
     if not text or len(text.split()) < 50:
         print("[INFO] Falling back to PyMuPDF block extraction...")
         text = extract_with_pymupdf_blocks(pdf_path)
