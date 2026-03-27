@@ -1,13 +1,16 @@
 from parser.extract_text import extract_text
 from parser.utils import clean_text
+from nlp.section_classifier import get_structured_sections
 
-pdf_path = "uploads/resume1.pdf"
+pdf_path = "uploads/resume2.pdf"
 
-raw_text = extract_text(pdf_path)
-cleaned_text = clean_text(raw_text)
+text = extract_text(pdf_path)
+cleaned = clean_text(text)
 
-print("----- RAW TEXT -----")
-print(raw_text[:1000])
+sections = get_structured_sections(cleaned)
 
-print("\n----- CLEANED TEXT -----")
-print(cleaned_text[:1000])
+sections = get_structured_sections(cleaned)
+
+for key, value in sections.items():
+    print(f"\n--- {key.upper()} ---")
+    print(value[:300])
