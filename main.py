@@ -1,7 +1,7 @@
 from parser.extract_text import extract_text
 from parser.utils import clean_text
 
-pdf_path = "uploads/resume2.pdf"
+pdf_path = "uploads/resume1.pdf"
 
 raw_text = extract_text(pdf_path)
 cleaned_text = clean_text(raw_text)
