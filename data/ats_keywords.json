@@ -1,0 +1,32 @@
+{
+  "web_developer": [
+    "html",
+    "css",
+    "javascript",
+    "react",
+    "angular",
+    "vue.js",
+    "bootstrap",
+    "tailwind css",
+    "node.js",
+    "responsive design",
+    "api integration",
+    "git",
+    "webpack"
+  ],
+  "software_developer": [
+    "python",
+    "java",
+    "c++",
+    "c#",
+    "object oriented programming",
+    "data structures",
+    "algorithms",
+    "system design",
+    "dbms",
+    "operating systems",
+    "version control (git)",
+    "cloud platforms (aws, azure)",
+    "testing and debugging"
+  ]
+}
