@@ -1,19 +1,9 @@
-def compute_score(sections, ats_result):
-    skill_score = ats_result["score"]
+def compute_score(sections, semantic_result):
+    skill_score = semantic_result["score"]
 
-    # Experience boost
-    exp_text = sections.get("experience", "")
-    experience_score = 1 if len(exp_text) > 50 else 0.5
+    exp_score = 1 if len(sections.get("experience", "")) > 50 else 0.6
+    edu_score = 1 if "btech" in sections.get("education", "") else 0.6
 
-    # Education boost
-    edu_text = sections.get("education", "")
-    education_score = 1 if "btech" in edu_text or "bachelor" in edu_text else 0.5
+    final = (0.6 * skill_score) + (0.25 * exp_score) + (0.15 * edu_score)
 
-    # Final weighted score
-    final_score = (
-        0.5 * skill_score +
-        0.3 * experience_score +
-        0.2 * education_score
-    )
-
-    return round(final_score, 2)
+    return round(final, 2)

@@ -3,50 +3,41 @@ from sklearn.metrics.pairwise import cosine_similarity
 from models.embedding_model import get_embedding
 
 
-def load_keywords(path="data/ats_keywords.json"):
-    with open(path, "r") as f:
+def load_keywords():
+    with open("data/ats_keywords.json", "r") as f:
         return json.load(f)
 
 
 def semantic_match(resume_text, role):
-    keywords_data = load_keywords()
-    role = role.lower().replace(" ", "_")
+    data = load_keywords()
+    keywords = data[role]
 
-    keywords = keywords_data[role]
+    lines = list(set([l.strip() for l in resume_text.split("\n") if len(l.strip()) > 10]))
 
-    lines = [l.strip() for l in resume_text.split("\n") if l.strip()]
+    # 🔥 BATCH EMBEDDING (VERY IMPORTANT)
+    line_embeddings = get_embedding(lines)
+    keyword_embeddings = get_embedding(keywords)
 
     matched = []
     missing = []
-    keyword_scores = []
+    scores = []
 
-    for keyword in keywords:
-        keyword_emb = get_embedding(keyword)
+    for i, keyword_emb in enumerate(keyword_embeddings):
+        sims = cosine_similarity([keyword_emb], line_embeddings)[0]
 
-        best_score = 0
-
-        for line in lines:
-            line_emb = get_embedding(line)
-
-            sim = cosine_similarity(
-                [keyword_emb],
-                [line_emb]
-            )[0][0]
-
-            best_score = max(best_score, sim)
-
-        keyword_scores.append(best_score)
+        best_score = max(sims)
+        scores.append(best_score)
 
         if best_score > 0.4:
-            matched.append((keyword, round(best_score, 2)))
+            matched.append((keywords[i], round(float(best_score), 2)))
         else:
-            missing.append(keyword)
+            missing.append(keywords[i])
 
-    final_score = sum(keyword_scores) / len(keyword_scores)
+    final_score = sum(scores) / len(scores)
 
     return {
         "role": role,
-        "score": round(final_score, 2),
+        "score": round(float(final_score), 2),
         "matched": matched,
         "missing": missing
     }
