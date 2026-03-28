@@ -10,6 +10,7 @@ from scoring.skill_gap import generate_skill_gap
 pdf_path = "uploads/resume2.pdf"
 role = "web_developer"
 
+
 # -----------------------------------
 # STEP 1: Extract
 # -----------------------------------
@@ -42,7 +43,7 @@ skill_gap = generate_skill_gap(semantic_result)
 
 
 # ===================================
-# HELPER FUNCTION (NEW)
+# HELPER FUNCTION
 # ===================================
 def get_strength_label(score):
     if score >= 0.85:
@@ -57,39 +58,39 @@ def get_strength_label(score):
 # OUTPUT
 # ===================================
 
-print("\n===== SEMANTIC MATCH RESULT =====")
-print(semantic_result)
-
-print("\n===== FINAL SCORE =====")
-print(final_score)
+print("\n" + "="*50)
+print("FINAL SCORE:", final_score)
+print("="*50)
 
 
 # -----------------------------------
-# 🔥 EXPLAINABLE SCORE BREAKDOWN
+# 🔥 FORCE SHOW SCORE BREAKDOWN
 # -----------------------------------
-print("\n===== SCORE BREAKDOWN =====")
-
-# Skills
 skill_score = semantic_result["score"]
 skill_percent = int(skill_score * 100)
 
-# Experience
 exp_len = len(sections.get("experience", ""))
 exp_score = 1 if exp_len > 80 else 0.7 if exp_len > 40 else 0.4
 
-# Education
 edu_text = sections.get("education", "")
 edu_score = 1 if ("btech" in edu_text or "bachelor" in edu_text) else 0.6
 
-print(f"Skills Match: {skill_percent}%")
-print(f"Experience Strength: {get_strength_label(exp_score)}")
-print(f"Education Strength: {get_strength_label(edu_score)}")
+print("\n" + "="*50)
+print("SCORE BREAKDOWN")
+print("="*50)
+
+print(f"Skills Match        : {skill_percent}%")
+print(f"Experience Strength : {get_strength_label(exp_score)}")
+print(f"Education Strength  : {get_strength_label(edu_score)}")
 
 
 # -----------------------------------
 # SECTIONS
 # -----------------------------------
-print("\n===== SECTIONS =====")
+print("\n" + "="*50)
+print("SECTIONS")
+print("="*50)
+
 for k, v in sections.items():
     print(f"\n--- {k.upper()} ---")
     print(v[:200])
@@ -98,7 +99,9 @@ for k, v in sections.items():
 # -----------------------------------
 # SKILL GAP ANALYSIS
 # -----------------------------------
-print("\n===== SKILL GAP ANALYSIS =====")
+print("\n" + "="*50)
+print("SKILL GAP ANALYSIS")
+print("="*50)
 
 print("\nStrong Skills:")
 for s in skill_gap["strong"]:
@@ -108,20 +111,17 @@ print("\nMissing Skills:")
 for s in skill_gap["missing"]:
     print(f"- {s}")
 
-print("\nCategorized Gaps:")
-for cat, skills in skill_gap["missing_by_category"].items():
-    if skills:
-        print(f"{cat.upper()}: {', '.join(skills)}")
-
 print("\nRecommendations:")
 for r in skill_gap["recommendations"]:
     print(f"- {r}")
 
 
 # -----------------------------------
-# 🔥 PROFILE SUMMARY
+# PROFILE SUMMARY
 # -----------------------------------
-print("\n===== PROFILE SUMMARY =====")
+print("\n" + "="*50)
+print("PROFILE SUMMARY")
+print("="*50)
 
 strengths = []
 weaknesses = []
