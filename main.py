@@ -43,16 +43,9 @@ jd_score = match_resume_to_jd(cleaned, job_description)
 section_quality = evaluate_sections(sections)
 
 
-# ===================================
-# OUTPUT
-# ===================================
-
 print("\n===== FINAL SCORE =====")
 print(final_score)
 
-# -----------------------------------
-# ATS ROLE MATCH
-# -----------------------------------
 print("\n===== ROLE MATCH (ATS) =====")
 
 print("\nMatched Skills:")
@@ -65,25 +58,13 @@ for s in semantic_result["missing"]:
 
 print("\n(Note: Optional skills like Angular, Vue, etc. are NOT mandatory)")
 
-
-# -----------------------------------
-# JD MATCH
-# -----------------------------------
 print("\n===== JD MATCH SCORE =====")
 print(f"Match with Job Description: {int(jd_score * 100)}%")
 
-
-# -----------------------------------
-# SECTION QUALITY
-# -----------------------------------
 print("\n===== SECTION QUALITY =====")
 for k, v in section_quality.items():
     print(f"{k.capitalize()}: {v}")
 
-
-# -----------------------------------
-# SKILL GAP
-# -----------------------------------
 print("\n===== SKILL GAP ANALYSIS =====")
 
 print("\nStrong Skills:")

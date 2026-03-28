@@ -8,7 +8,6 @@ def load_keywords():
         return json.load(f)
 
 
-# 🔥 NORMALIZATION (REMOVE DUPLICATES + HANDLE VARIANTS)
 NORMALIZATION_MAP = {
     "html5": "html",
     "css3": "css",
@@ -46,7 +45,6 @@ def semantic_match(resume_text, role):
         if len(l.strip()) > 10
     ]))
 
-    # 🔥 Batch embedding
     line_embeddings = get_embedding(lines)
     keyword_embeddings = get_embedding(must_have)
 

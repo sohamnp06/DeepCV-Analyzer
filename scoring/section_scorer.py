@@ -1,7 +1,6 @@
 def get_section_strength(text):
     word_count = len(text.split())
 
-    # 🔥 MUCH BETTER LOGIC
     if word_count > 100:
         return "Strong"
     elif word_count > 40:

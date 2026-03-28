@@ -44,9 +44,6 @@ def generate_skill_gap(semantic_result):
     result["strong_by_category"] = matched_cat
     result["missing_by_category"] = missing_cat
 
-    # -----------------------------------
-    # SMART RECOMMENDATIONS
-    # -----------------------------------
     recommendations = []
 
     if missing_cat["core_cs"]:

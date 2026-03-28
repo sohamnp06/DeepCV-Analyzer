@@ -6,10 +6,6 @@ SECTION_HEADERS = {
     "summary": ["summary", "profile", "about", "objective"]
 }
 
-
-# -----------------------------------
-# HEADER DETECTION
-# -----------------------------------
 def is_header(line):
     line = line.lower().strip()
 
@@ -19,20 +15,12 @@ def is_header(line):
 
     return None
 
-
-# -----------------------------------
-# NOISE FILTER
-# -----------------------------------
 def is_noise(line):
     return any(x in line.lower() for x in [
         "contact", "phone", "email", "www", ".com",
         "+91", "india", "mumbai"
     ])
 
-
-# -----------------------------------
-# FALLBACK CLASSIFICATION
-# -----------------------------------
 def fallback_classify(line):
     line = line.lower()
 
@@ -47,10 +35,6 @@ def fallback_classify(line):
 
     return "other"
 
-
-# -----------------------------------
-# 🔥 REAL SKILL EXTRACTION (NO HARDCODE)
-# -----------------------------------
 def extract_skills_real(sections):
     text = ""
 
@@ -71,7 +55,6 @@ def extract_skills_real(sections):
         if len(part) > 2:
             tokens.append(part)
 
-    # Remove common noise words
     stop_words = [
         "and", "with", "for", "the", "this", "that",
         "experience", "years", "worked", "using",
@@ -83,9 +66,6 @@ def extract_skills_real(sections):
     return " ".join(sorted(set(skills)))
 
 
-# -----------------------------------
-# CLEAN OTHER SECTION
-# -----------------------------------
 def clean_other(text):
     text = text.lower()
 
@@ -99,9 +79,6 @@ def clean_other(text):
     return text.strip()
 
 
-# -----------------------------------
-# MAIN FUNCTION
-# -----------------------------------
 def get_structured_sections(text):
     sections = {
         "education": [],
@@ -141,14 +118,8 @@ def get_structured_sections(text):
     for key in sections:
         sections[key] = " ".join(sections[key])
 
-    # -----------------------------------
-    # FINAL SKILLS (REAL EXTRACTION)
-    # -----------------------------------
     sections["skills"] = extract_skills_real(sections)
 
-    # -----------------------------------
-    # CLEAN OTHER
-    # -----------------------------------
     sections["other"] = clean_other(sections["other"])
 
     return sections
