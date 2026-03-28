@@ -6,102 +6,63 @@ from scoring.semantic_matcher import semantic_match
 from scoring.scorer import compute_score
 from scoring.skill_gap import generate_skill_gap
 
+# NEW
+from scoring.jd_matcher import match_resume_to_jd
+from scoring.section_scorer import evaluate_sections
 
-pdf_path = "uploads/resume2.pdf"
+
+pdf_path = "uploads/resume.pdf"
 role = "web_developer"
 
+# 🔥 SAMPLE JD (you can take input later)
+job_description = """
+Looking for a web developer with strong skills in HTML, CSS, JavaScript,
+React, Node.js, and API integration. Experience with Git is required.
+"""
 
-# -----------------------------------
-# STEP 1: Extract
-# -----------------------------------
+# STEP 1
 text = extract_text(pdf_path)
 
-# -----------------------------------
-# STEP 2: Clean
-# -----------------------------------
+# STEP 2
 cleaned = clean_text(text)
 
-# -----------------------------------
-# STEP 3: Sections
-# -----------------------------------
+# STEP 3
 sections = get_structured_sections(cleaned)
 
-# -----------------------------------
-# STEP 4: Semantic Matching
-# -----------------------------------
+# STEP 4
 semantic_result = semantic_match(cleaned, role)
 
-# -----------------------------------
-# STEP 5: Final Score
-# -----------------------------------
+# STEP 5
 final_score = compute_score(sections, semantic_result)
 
-# -----------------------------------
-# STEP 6: Skill Gap
-# -----------------------------------
+# STEP 6
 skill_gap = generate_skill_gap(semantic_result)
 
+# STEP 7 (NEW)
+jd_score = match_resume_to_jd(cleaned, job_description)
 
-# ===================================
-# HELPER FUNCTION
-# ===================================
-def get_strength_label(score):
-    if score >= 0.85:
-        return "Strong"
-    elif score >= 0.65:
-        return "Medium"
-    else:
-        return "Weak"
+# STEP 8 (NEW)
+section_quality = evaluate_sections(sections)
 
 
 # ===================================
 # OUTPUT
 # ===================================
 
-print("\n" + "="*50)
-print("FINAL SCORE:", final_score)
-print("="*50)
+print("\n===== FINAL SCORE =====")
+print(final_score)
 
+print("\n===== ROLE MATCH (ATS) =====")
+print(semantic_result)
 
-# -----------------------------------
-# 🔥 FORCE SHOW SCORE BREAKDOWN
-# -----------------------------------
-skill_score = semantic_result["score"]
-skill_percent = int(skill_score * 100)
+print("\n===== JD MATCH SCORE =====")
+print(f"Match with Job Description: {int(jd_score * 100)}%")
 
-exp_len = len(sections.get("experience", ""))
-exp_score = 1 if exp_len > 80 else 0.7 if exp_len > 40 else 0.4
+print("\n===== SECTION QUALITY =====")
+for k, v in section_quality.items():
+    print(f"{k.capitalize()}: {v}")
 
-edu_text = sections.get("education", "")
-edu_score = 1 if ("btech" in edu_text or "bachelor" in edu_text) else 0.6
-
-print("\n" + "="*50)
-print("SCORE BREAKDOWN")
-print("="*50)
-
-print(f"Skills Match        : {skill_percent}%")
-print(f"Experience Strength : {get_strength_label(exp_score)}")
-print(f"Education Strength  : {get_strength_label(edu_score)}")
-
-
-# -----------------------------------
-# SECTIONS
-# -----------------------------------
-print("\n" + "="*50)
-print("SECTIONS")
-print("="*50)
-
-for k, v in sections.items():
-    print(f"\n--- {k.upper()} ---")
-    print(v[:200])
-
-
-# -----------------------------------
-# SKILL GAP ANALYSIS
-# -----------------------------------
-print("\n" + "="*50)
-print("SKILL GAP ANALYSIS")
-print("="*50)
+print("\n===== SKILL GAP ANALYSIS =====")
 
 print("\nStrong Skills:")
 for s in skill_gap["strong"]:
@@ -114,40 +75,3 @@ for s in skill_gap["missing"]:
 print("\nRecommendations:")
 for r in skill_gap["recommendations"]:
     print(f"- {r}")
-
-
-# -----------------------------------
-# PROFILE SUMMARY
-# -----------------------------------
-print("\n" + "="*50)
-print("PROFILE SUMMARY")
-print("="*50)
-
-strengths = []
-weaknesses = []
-
-if skill_score >= 0.6:
-    strengths.append("Good alignment with required skills")
-
-if exp_score >= 0.7:
-    strengths.append("Decent practical experience")
-
-if edu_score >= 0.85:
-    strengths.append("Strong educational background")
-
-if skill_score < 0.5:
-    weaknesses.append("Low skill match for target role")
-
-if exp_score < 0.6:
-    weaknesses.append("Limited experience")
-
-if len(skill_gap["missing"]) > 5:
-    weaknesses.append("Multiple critical skill gaps")
-
-print("\nStrengths:")
-for s in strengths:
-    print(f"- {s}")
-
-print("\nWeaknesses:")
-for w in weaknesses:
-    print(f"- {w}")
