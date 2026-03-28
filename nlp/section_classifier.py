@@ -7,25 +7,39 @@ SECTION_HEADERS = {
 }
 
 
+# -----------------------------------
+# HEADER DETECTION
+# -----------------------------------
 def is_header(line):
     line = line.lower().strip()
+
     for section, keywords in SECTION_HEADERS.items():
-        if any(kw in line for kw in keywords) and len(line.split()) <= 6:
+        if any(kw in line for kw in keywords) and len(line.split()) <= 5:
             return section
+
     return None
 
 
+# -----------------------------------
+# NOISE FILTER
+# -----------------------------------
 def is_noise(line):
-    return any(x in line.lower() for x in ["contact", "phone", "email", "www", ".com"])
+    return any(x in line.lower() for x in [
+        "contact", "phone", "email", "www", ".com",
+        "+91", "india", "mumbai"
+    ])
 
 
+# -----------------------------------
+# FALLBACK CLASSIFICATION
+# -----------------------------------
 def fallback_classify(line):
     line = line.lower()
 
-    if any(k in line for k in ["btech", "university", "college"]):
+    if any(k in line for k in ["btech", "mtech", "university", "college"]):
         return "education"
 
-    if any(k in line for k in ["intern", "developer", "engineer"]):
+    if any(k in line for k in ["internship", "intern at", "worked at"]):
         return "experience"
 
     if any(k in line for k in ["project", "built", "developed"]):
@@ -34,52 +48,60 @@ def fallback_classify(line):
     return "other"
 
 
-# 🔥 Dynamic skills extraction (no heavy NLP)
-def extract_skills(skills_text, summary_text):
-    combined = (skills_text + " " + summary_text).lower()
+# -----------------------------------
+# 🔥 REAL SKILL EXTRACTION (NO HARDCODE)
+# -----------------------------------
+def extract_skills_real(sections):
+    text = ""
 
-    # Remove noise
-    noise_words = [
-        "name", "contact", "phone", "email",
-        "address", "mumbai", "india"
+    # Priority → Skills section
+    if sections["skills"]:
+        text = sections["skills"]
+    else:
+        # fallback
+        text = sections["summary"] + " " + sections["experience"]
+
+    text = text.lower()
+
+    # Split text
+    tokens = []
+    for part in text.replace(",", " ").replace("/", " ").split():
+        part = part.strip()
+
+        if len(part) > 2:
+            tokens.append(part)
+
+    # Remove common noise words
+    stop_words = [
+        "and", "with", "for", "the", "this", "that",
+        "experience", "years", "worked", "using",
+        "developer", "engineer"
     ]
 
-    for word in noise_words:
-        combined = combined.replace(word, "")
+    skills = [t for t in tokens if t not in stop_words]
 
-    # -----------------------------------
-    # SKILL KEYWORDS (EXPANDED)
-    # -----------------------------------
-    SKILLS_DB = [
-        # programming
-        "python", "java", "c++", "c#", "javascript",
+    return " ".join(sorted(set(skills)))
 
-        # web
-        "html", "css", "react", "node", "django", "flask",
 
-        # data
-        "sql", "mongodb", "machine learning", "data analysis",
+# -----------------------------------
+# CLEAN OTHER SECTION
+# -----------------------------------
+def clean_other(text):
+    text = text.lower()
 
-        # cs core
-        "dsa", "data structures", "algorithms",
-        "dbms", "operating system", "system design",
-
-        # tools
-        "git", "github", "aws", "azure",
-
-        # soft skills
-        "communication", "teamwork", "leadership",
-        "problem solving", "collaboration"
+    remove_words = [
+        "phone", "email", "contact", "www"
     ]
 
-    found = []
+    for word in remove_words:
+        text = text.replace(word, "")
 
-    for skill in SKILLS_DB:
-        if skill in combined:
-            found.append(skill)
+    return text.strip()
 
-    return " ".join(sorted(set(found)))
 
+# -----------------------------------
+# MAIN FUNCTION
+# -----------------------------------
 def get_structured_sections(text):
     sections = {
         "education": [],
@@ -109,15 +131,24 @@ def get_structured_sections(text):
         else:
             section = current_section
 
+        # Safety
+        if not isinstance(sections[section], list):
+            sections[section] = []
+
         sections[section].append(line)
 
+    # Convert to string
     for key in sections:
         sections[key] = " ".join(sections[key])
 
-    # 🔥 Use FULL TEXT for skills (IMPORTANT CHANGE)
-    sections["skills"] = extract_skills(
-    sections["skills"],
-    sections["summary"]
-    )
+    # -----------------------------------
+    # FINAL SKILLS (REAL EXTRACTION)
+    # -----------------------------------
+    sections["skills"] = extract_skills_real(sections)
+
+    # -----------------------------------
+    # CLEAN OTHER
+    # -----------------------------------
+    sections["other"] = clean_other(sections["other"])
 
     return sections
