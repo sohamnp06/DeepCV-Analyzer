@@ -8,15 +8,47 @@ def load_keywords():
         return json.load(f)
 
 
+# 🔥 NORMALIZATION (REMOVE DUPLICATES + HANDLE VARIANTS)
+NORMALIZATION_MAP = {
+    "html5": "html",
+    "css3": "css",
+    "js": "javascript",
+    "node.js": "node",
+    "react.js": "react",
+    "express.js": "express",
+    "dsa": "data structures algorithms",
+    "data structures and algorithms": "data structures algorithms",
+    "os": "operating system"
+}
+
+
+def normalize(text):
+    text = text.lower()
+    for k, v in NORMALIZATION_MAP.items():
+        text = text.replace(k, v)
+    return text
+
+
 def semantic_match(resume_text, role):
     data = load_keywords()
-    keywords = data[role]
 
-    lines = list(set([l.strip() for l in resume_text.split("\n") if len(l.strip()) > 10]))
+    role_data = data[role]
 
-    # 🔥 BATCH EMBEDDING (VERY IMPORTANT)
+    must_have = role_data["must_have"]
+    optional = role_data["optional"]
+
+    # Normalize resume
+    resume_text = normalize(resume_text)
+
+    lines = list(set([
+        normalize(l.strip())
+        for l in resume_text.split("\n")
+        if len(l.strip()) > 10
+    ]))
+
+    # 🔥 Batch embedding
     line_embeddings = get_embedding(lines)
-    keyword_embeddings = get_embedding(keywords)
+    keyword_embeddings = get_embedding(must_have)
 
     matched = []
     missing = []
@@ -28,10 +60,12 @@ def semantic_match(resume_text, role):
         best_score = max(sims)
         scores.append(best_score)
 
+        keyword = must_have[i]
+
         if best_score > 0.4:
-            matched.append((keywords[i], round(float(best_score), 2)))
+            matched.append((keyword, round(float(best_score), 2)))
         else:
-            missing.append(keywords[i])
+            missing.append(keyword)
 
     final_score = sum(scores) / len(scores)
 
@@ -39,5 +73,6 @@ def semantic_match(resume_text, role):
         "role": role,
         "score": round(float(final_score), 2),
         "matched": matched,
-        "missing": missing
+        "missing": missing,
+        "optional_skills": optional
     }
