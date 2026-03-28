@@ -1,51 +1,28 @@
 import re
 
 
-SECTION_KEYWORDS = {
-    "education": ["education", "btech", "mtech", "bachelor", "master", "university"],
-    "experience": ["experience", "intern", "developer", "engineer", "company"],
-    "skills": ["skills", "python", "java", "sql", "react"],
-    "projects": ["project", "built", "developed"],
+SECTION_HEADERS = {
+    "education": ["education", "academic", "qualification"],
+    "experience": ["experience", "work experience", "employment"],
+    "skills": ["skills", "technical skills"],
+    "projects": ["projects"],
     "summary": ["summary", "profile", "about", "objective"]
 }
 
 
-def clean_line(line):
-    line = line.strip().lower()
+def is_header(line):
+    line = line.lower().strip()
 
-    # remove very noisy lines
-    if len(line) < 3:
-        return None
-
-    if re.match(r'^\d+$', line):
-        return None
-
-    return line
-
-
-def score_line(line):
-    scores = {k: 0 for k in SECTION_KEYWORDS}
-
-    for section, keywords in SECTION_KEYWORDS.items():
+    for section, keywords in SECTION_HEADERS.items():
         for kw in keywords:
-            if kw in line:
-                scores[section] += 1
+            # strong header match (short + keyword)
+            if kw in line and len(line.split()) <= 4:
+                return section
 
-    return scores
-
-
-def classify_line(line):
-    scores = score_line(line)
-
-    best = max(scores, key=scores.get)
-
-    if scores[best] == 0:
-        return "other"
-
-    return best
+    return None
 
 
-def classify_sections(text):
+def get_structured_sections(text):
     sections = {
         "education": [],
         "experience": [],
@@ -55,20 +32,22 @@ def classify_sections(text):
         "other": []
     }
 
-    for line in text.split("\n"):
-        line = clean_line(line)
-        if not line:
+    current_section = "other"
+
+    lines = [l.strip() for l in text.split("\n") if l.strip()]
+
+    for line in lines:
+        detected = is_header(line)
+
+        if detected:
+            current_section = detected
             continue
 
-        section = classify_line(line)
-        sections[section].append(line)
+        # assign content to current section
+        sections[current_section].append(line)
 
-    # join results
+    # join text
     for key in sections:
         sections[key] = " ".join(sections[key])
 
     return sections
-
-
-def get_structured_sections(text):
-    return classify_sections(text)
