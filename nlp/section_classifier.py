@@ -1,51 +1,85 @@
-import re
-
-
-SECTION_KEYWORDS = {
-    "education": ["education", "btech", "mtech", "bachelor", "master", "university"],
-    "experience": ["experience", "intern", "developer", "engineer", "company"],
-    "skills": ["skills", "python", "java", "sql", "react"],
-    "projects": ["project", "built", "developed"],
+SECTION_HEADERS = {
+    "education": ["education", "academic", "qualification"],
+    "experience": ["experience", "work experience", "employment"],
+    "skills": ["skills", "technical skills", "core skills", "technologies"],
+    "projects": ["projects"],
     "summary": ["summary", "profile", "about", "objective"]
 }
 
+def is_header(line):
+    line = line.lower().strip()
 
-def clean_line(line):
-    line = line.strip().lower()
+    for section, keywords in SECTION_HEADERS.items():
+        if any(kw in line for kw in keywords) and len(line.split()) <= 5:
+            return section
 
-    # remove very noisy lines
-    if len(line) < 3:
-        return None
+    return None
 
-    if re.match(r'^\d+$', line):
-        return None
+def is_noise(line):
+    return any(x in line.lower() for x in [
+        "contact", "phone", "email", "www", ".com",
+        "+91", "india", "mumbai"
+    ])
 
-    return line
+def fallback_classify(line):
+    line = line.lower()
+
+    if any(k in line for k in ["btech", "mtech", "university", "college"]):
+        return "education"
+
+    if any(k in line for k in ["internship", "intern at", "worked at"]):
+        return "experience"
+
+    if any(k in line for k in ["project", "built", "developed"]):
+        return "projects"
+
+    return "other"
+
+def extract_skills_real(sections):
+    text = ""
+
+    # Priority → Skills section
+    if sections["skills"]:
+        text = sections["skills"]
+    else:
+        # fallback
+        text = sections["summary"] + " " + sections["experience"]
+
+    text = text.lower()
+
+    # Split text
+    tokens = []
+    for part in text.replace(",", " ").replace("/", " ").split():
+        part = part.strip()
+
+        if len(part) > 2:
+            tokens.append(part)
+
+    stop_words = [
+        "and", "with", "for", "the", "this", "that",
+        "experience", "years", "worked", "using",
+        "developer", "engineer"
+    ]
+
+    skills = [t for t in tokens if t not in stop_words]
+
+    return " ".join(sorted(set(skills)))
 
 
-def score_line(line):
-    scores = {k: 0 for k in SECTION_KEYWORDS}
+def clean_other(text):
+    text = text.lower()
 
-    for section, keywords in SECTION_KEYWORDS.items():
-        for kw in keywords:
-            if kw in line:
-                scores[section] += 1
+    remove_words = [
+        "phone", "email", "contact", "www"
+    ]
 
-    return scores
+    for word in remove_words:
+        text = text.replace(word, "")
 
-
-def classify_line(line):
-    scores = score_line(line)
-
-    best = max(scores, key=scores.get)
-
-    if scores[best] == 0:
-        return "other"
-
-    return best
+    return text.strip()
 
 
-def classify_sections(text):
+def get_structured_sections(text):
     sections = {
         "education": [],
         "experience": [],
@@ -55,20 +89,37 @@ def classify_sections(text):
         "other": []
     }
 
-    for line in text.split("\n"):
-        line = clean_line(line)
-        if not line:
+    current_section = "other"
+    lines = [l.strip() for l in text.split("\n") if l.strip()]
+
+    for line in lines:
+
+        if is_noise(line):
             continue
 
-        section = classify_line(line)
+        header = is_header(line)
+
+        if header:
+            current_section = header
+            continue
+
+        if current_section == "other":
+            section = fallback_classify(line)
+        else:
+            section = current_section
+
+        # Safety
+        if not isinstance(sections[section], list):
+            sections[section] = []
+
         sections[section].append(line)
 
-    # join results
+    # Convert to string
     for key in sections:
         sections[key] = " ".join(sections[key])
 
+    sections["skills"] = extract_skills_real(sections)
+
+    sections["other"] = clean_other(sections["other"])
+
     return sections
-
-
-def get_structured_sections(text):
-    return classify_sections(text)

@@ -1,32 +1,61 @@
 {
-  "web_developer": [
-    "html",
-    "css",
-    "javascript",
-    "react",
-    "angular",
-    "vue.js",
-    "bootstrap",
-    "tailwind css",
-    "node.js",
-    "responsive design",
-    "api integration",
-    "git",
-    "webpack"
-  ],
-  "software_developer": [
-    "python",
-    "java",
-    "c++",
-    "c#",
-    "object oriented programming",
-    "data structures",
-    "algorithms",
-    "system design",
-    "dbms",
-    "operating systems",
-    "version control (git)",
-    "cloud platforms (aws, azure)",
-    "testing and debugging"
-  ]
+  "web_developer": {
+    "must_have": [
+      "html",
+      "css",
+      "javascript",
+      "react",
+      "node",
+      "api",
+      "responsive design",
+      "git"
+    ],
+    "optional": [
+      "angular",
+      "vue",
+      "bootstrap",
+      "tailwind",
+      "webpack",
+      "vite",
+      "express"
+    ]
+  },
+
+  "software_developer": {
+    "must_have": [
+      "python",
+      "java",
+      "data structures",
+      "algorithms",
+      "dbms",
+      "operating system",
+      "git"
+    ],
+    "optional": [
+      "c++",
+      "c#",
+      "system design",
+      "cloud",
+      "testing",
+      "debugging"
+    ]
+  },
+
+  "data_scientist": {
+    "must_have": [
+      "python",
+      "machine learning",
+      "pandas",
+      "numpy",
+      "sql",
+      "statistics"
+    ],
+    "optional": [
+      "deep learning",
+      "nlp",
+      "matplotlib",
+      "seaborn",
+      "power bi"
+    ]
+  }
 }
