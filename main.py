@@ -9,6 +9,9 @@ from scoring.skill_gap import generate_skill_gap
 from scoring.jd_matcher import match_resume_to_jd
 from scoring.section_scorer import evaluate_sections
 
+# NEW DB
+from database.db import insert_result
+
 
 pdf_path = "uploads/resume1.pdf"
 role = "web_developer"
@@ -43,6 +46,10 @@ jd_score = match_resume_to_jd(cleaned, job_description)
 section_quality = evaluate_sections(sections)
 
 
+# ===================================
+# PRINT OUTPUT
+# ===================================
+
 print("\n===== FINAL SCORE =====")
 print(final_score)
 
@@ -56,10 +63,8 @@ print("\nMissing MUST-HAVE Skills:")
 for s in semantic_result["missing"]:
     print(f"- {s}")
 
-print("\n(Note: Optional skills like Angular, Vue, etc. are NOT mandatory)")
-
 print("\n===== JD MATCH SCORE =====")
-print(f"Match with Job Description: {int(jd_score * 100)}%")
+print(f"{int(jd_score * 100)}%")
 
 print("\n===== SECTION QUALITY =====")
 for k, v in section_quality.items():
@@ -67,14 +72,25 @@ for k, v in section_quality.items():
 
 print("\n===== SKILL GAP ANALYSIS =====")
 
-print("\nStrong Skills:")
-for s in skill_gap["strong"]:
-    print(f"- {s}")
-
-print("\nMissing Skills:")
-for s in skill_gap["missing"]:
-    print(f"- {s}")
-
 print("\nRecommendations:")
 for r in skill_gap["recommendations"]:
     print(f"- {r}")
+
+db_data = {
+    "role": role,
+    "final_score": float(final_score),
+    "jd_score": float(jd_score),
+
+    "matched_skills": ", ".join([m[0] for m in semantic_result["matched"]]),
+    "missing_skills": ", ".join(semantic_result["missing"]),
+
+    "education_quality": section_quality["education"],
+    "experience_quality": section_quality["experience"],
+    "projects_quality": section_quality["projects"],
+
+    "recommendations": ", ".join(skill_gap["recommendations"])
+}
+
+insert_result(db_data)
+
+print("\n✅ Data stored in PostgreSQL successfully!")
