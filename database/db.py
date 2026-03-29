@@ -1,14 +1,69 @@
+import hashlib
+import os
+
 import psycopg2
+from dotenv import load_dotenv
+from psycopg2.extras import RealDictCursor
+
+load_dotenv()
+
+
+def _env(name, default=None):
+    value = os.getenv(name, default)
+    if value is None:
+        raise RuntimeError(f"Missing required environment variable: {name}")
+    return value
 
 
 def get_connection():
     return psycopg2.connect(
-        dbname="resume_tracker_db",   # ✅ FIXED
-        user="postgres",              # change if needed
-        password="root",
-        host="localhost",
-        port="5432"
+        dbname=_env("POSTGRES_DB", "resume_tracker_db"),
+        user=_env("POSTGRES_USER", "postgres"),
+        password=_env("POSTGRES_PASSWORD"),
+        host=_env("POSTGRES_HOST", "localhost"),
+        port=_env("POSTGRES_PORT", "5432"),
     )
+
+
+def _hash_password(password):
+    secret = _env("AUTH_SECRET", "change-this-secret")
+    return hashlib.sha256(f"{secret}:{password}".encode("utf-8")).hexdigest()
+
+
+def init_db():
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute(
+        """
+        CREATE TABLE IF NOT EXISTS users (
+            id SERIAL PRIMARY KEY,
+            username VARCHAR(150) UNIQUE NOT NULL,
+            password_hash VARCHAR(256) NOT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );
+        """
+    )
+    cursor.execute(
+        """
+        CREATE TABLE IF NOT EXISTS resume_analysis (
+            id SERIAL PRIMARY KEY,
+            user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+            role VARCHAR(100) NOT NULL,
+            final_score NUMERIC(5,2) NOT NULL,
+            jd_score NUMERIC(5,2) NOT NULL,
+            matched_skills TEXT,
+            missing_skills TEXT,
+            education_quality VARCHAR(20),
+            experience_quality VARCHAR(20),
+            projects_quality VARCHAR(20),
+            recommendations TEXT,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );
+        """
+    )
+    conn.commit()
+    cursor.close()
+    conn.close()
 
 
 # -----------------------------
@@ -19,8 +74,8 @@ def register_user(username, password):
     cursor = conn.cursor()
 
     cursor.execute(
-        "INSERT INTO users (username, password) VALUES (%s, %s) RETURNING id",
-        (username, password)
+        "INSERT INTO users (username, password_hash) VALUES (%s, %s) RETURNING id",
+        (username, _hash_password(password)),
     )
 
     user_id = cursor.fetchone()[0]
@@ -34,11 +89,11 @@ def register_user(username, password):
 
 def login_user(username, password):
     conn = get_connection()
-    cursor = conn.cursor()
+    cursor = conn.cursor(cursor_factory=RealDictCursor)
 
     cursor.execute(
-        "SELECT id FROM users WHERE username=%s AND password=%s",
-        (username, password)
+        "SELECT id, username FROM users WHERE username=%s AND password_hash=%s",
+        (username, _hash_password(password)),
     )
 
     user = cursor.fetchone()
@@ -46,7 +101,7 @@ def login_user(username, password):
     cursor.close()
     conn.close()
 
-    return user[0] if user else None
+    return user if user else None
 
 
 # -----------------------------

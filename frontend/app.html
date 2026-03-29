@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>ATS AI - Resume Analyzer</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-black text-white min-h-screen">
+  <nav class="flex justify-between items-center px-10 py-5 border-b border-gray-800">
+    <h1 class="text-2xl font-bold">ATS AI - Project</h1>
+    <button onclick="logout()" class="text-sm bg-gray-800 px-4 py-2 rounded-lg border border-gray-700">Logout</button>
+  </nav>
+
+  <main class="max-w-4xl mx-auto p-6 space-y-6">
+    <h2 class="text-3xl font-bold">Upload Resume</h2>
+
+    <div class="space-y-3">
+      <label class="block text-gray-300">Role</label>
+      <select id="role" class="w-full p-3 rounded-xl bg-gray-900 border border-gray-700">
+        <option value="">Select role</option>
+        <option value="web_developer">Web Developer</option>
+        <option value="software_developer">Software Developer</option>
+        <option value="data_scientist">Data Scientist</option>
+      </select>
+    </div>
+
+    <div class="space-y-3">
+      <label class="block text-gray-300">Job Description (optional custom JD)</label>
+      <textarea id="jd" rows="4" class="w-full p-3 rounded-xl bg-gray-900 border border-gray-700"
+        placeholder="Paste JD if you want custom JD matching..."></textarea>
+    </div>
+
+    <input id="resume" type="file" accept=".pdf" class="block w-full text-sm text-gray-200">
+
+    <button onclick="analyze()"
+      class="w-full bg-white text-black py-3 rounded-xl font-semibold hover:opacity-90">Analyze Resume</button>
+
+    <section id="result" class="hidden bg-gray-900/70 border border-gray-800 rounded-2xl p-6 space-y-4">
+      <h3 class="text-2xl font-bold">Analysis Result</h3>
+      <p><strong>ATS Score:</strong> <span id="atsScore"></span></p>
+      <p><strong>JD Match:</strong> <span id="jdMatch"></span></p>
+      <p><strong>Section Quality:</strong> <span id="sectionQuality"></span></p>
+      <p><strong>Matched Skills:</strong> <span id="matchedSkills"></span></p>
+      <p><strong>Missing Skills:</strong> <span id="missingSkills"></span></p>
+      <p><strong>Recommendations:</strong> <span id="recommendations"></span></p>
+    </section>
+  </main>
+
+  <script>
+    const API_BASE = "http://127.0.0.1:8000";
+
+    const userId = localStorage.getItem("ats_user_id");
+    if (!userId) {
+      window.location.href = "index.html";
+    }
+
+    function logout() {
+      localStorage.removeItem("ats_user_id");
+      localStorage.removeItem("ats_username");
+      window.location.href = "index.html";
+    }
+
+    async function analyze() {
+      const role = document.getElementById("role").value;
+      const jd = document.getElementById("jd").value;
+      const file = document.getElementById("resume").files[0];
+
+      if (!role || !file) {
+        alert("Please select a role and upload a PDF.");
+        return;
+      }
+
+      const formData = new FormData();
+      formData.append("role", role);
+      formData.append("user_id", userId);
+      formData.append("job_description", jd);
+      formData.append("file", file);
+
+      try {
+        const res = await fetch(`${API_BASE}/api/analyze`, {
+          method: "POST",
+          body: formData
+        });
+        const data = await res.json();
+
+        if (!res.ok) {
+          alert(data.detail || "Analysis failed.");
+          return;
+        }
+
+        document.getElementById("result").classList.remove("hidden");
+        document.getElementById("atsScore").textContent = `${data.ats_score}%`;
+        document.getElementById("jdMatch").textContent = `${data.jd_match}%`;
+        document.getElementById("sectionQuality").textContent = JSON.stringify(data.section_quality);
+        document.getElementById("matchedSkills").textContent = (data.matched_skills || []).join(", ") || "None";
+        document.getElementById("missingSkills").textContent = (data.missing_skills || []).join(", ") || "None";
+        document.getElementById("recommendations").textContent = (data.recommendations || []).join(" | ");
+      } catch {
+        alert("Could not connect to backend.");
+      }
+    }
+  </script>
+</body>
+</html>

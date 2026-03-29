@@ -2,126 +2,72 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>ATS Resume Analyzer</title>
-
-  <!-- Tailwind CDN -->
+  <title>ATS AI - Login</title>
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
-
 <body class="bg-gradient-to-br from-black via-gray-900 to-gray-950 text-white min-h-screen">
-
-  <!-- Navbar -->
-  <nav class="flex justify-between items-center px-10 py-5">
+  <nav class="flex justify-between items-center px-10 py-5 border-b border-gray-800">
     <h1 class="text-2xl font-bold">ATS AI</h1>
+    <a href="landing.html" class="text-gray-300 hover:text-white">Back to Landing</a>
   </nav>
 
-  <!-- Hero -->
-  <section class="text-center py-16 px-6">
-    <h1 class="text-5xl font-extrabold mb-6">
-      AI Resume Screening System
-    </h1>
-    <p class="text-gray-400 max-w-xl mx-auto">
-      Upload resume and select job role to calculate ATS score.
-    </p>
-  </section>
+  <section class="max-w-xl mx-auto px-6 py-16">
+    <h2 class="text-4xl font-bold mb-3 text-center">Login or Register</h2>
+    <p class="text-gray-400 text-center mb-8">Continue to upload and analyze resumes.</p>
 
-  <!-- MAIN SECTION -->
-  <section class="flex justify-center px-6 pb-20">
-    <div class="w-full max-w-2xl space-y-6">
+    <div class="bg-gray-900/70 border border-gray-800 rounded-2xl p-6 space-y-4">
+      <input id="username" type="text" placeholder="Username"
+        class="w-full p-3 rounded-xl bg-black border border-gray-700">
+      <input id="password" type="password" placeholder="Password"
+        class="w-full p-3 rounded-xl bg-black border border-gray-700">
 
-      <!-- 🔽 Job Role Dropdown -->
-      <div>
-        <label class="block mb-2 text-gray-300">Select Job Role</label>
-        <select id="roleSelect"
-          class="w-full p-3 rounded-xl bg-gray-900 border border-gray-700 text-white">
-          
-          <option value="">-- Choose Role --</option>
-          <option value="frontend">Frontend Developer</option>
-          <option value="backend">Backend Developer</option>
-          <option value="data">Data Scientist</option>
-          <option value="ml">Machine Learning Engineer</option>
-        </select>
+      <div class="grid grid-cols-2 gap-3">
+        <button onclick="auth('login')"
+          class="bg-white text-black py-3 rounded-xl font-semibold hover:opacity-90">Login</button>
+        <button onclick="auth('register')"
+          class="bg-gray-800 text-white py-3 rounded-xl font-semibold border border-gray-700">Sign Up</button>
       </div>
 
-      <!-- 📂 Upload Section -->
-      <div id="uploadBox"
-        class="border-2 border-dashed border-gray-700 rounded-3xl p-10 text-center hover:border-white transition cursor-pointer">
-
-        <p class="text-lg text-gray-400 mb-3">
-          Drag & Drop Resume Here
-        </p>
-
-        <input type="file" id="fileInput" class="hidden">
-
-        <button onclick="document.getElementById('fileInput').click()"
-          class="bg-white text-black px-6 py-2 rounded-lg">
-          Choose File
-        </button>
-
-        <p id="fileName" class="mt-4 text-green-400 hidden"></p>
-      </div>
-
-      <!-- 🚀 Submit Button -->
-      <button onclick="submitData()"
-        class="w-full bg-white text-black py-3 rounded-xl font-semibold hover:scale-105 transition">
-        Analyze Resume
-      </button>
-
-      <!-- 📊 Result -->
-      <div id="result" class="text-center text-green-400 text-lg hidden"></div>
-
+      <p id="message" class="text-sm text-center text-gray-300"></p>
     </div>
   </section>
 
-  <!-- JS -->
   <script>
-    const fileInput = document.getElementById("fileInput");
-    const fileName = document.getElementById("fileName");
+    const API_BASE = "http://127.0.0.1:8000";
 
-    let selectedFile = null;
+    async function auth(mode) {
+      const username = document.getElementById("username").value.trim();
+      const password = document.getElementById("password").value;
+      const message = document.getElementById("message");
 
-    fileInput.addEventListener("change", function () {
-      if (this.files.length > 0) {
-        selectedFile = this.files[0];
-        fileName.textContent = "Uploaded: " + selectedFile.name;
-        fileName.classList.remove("hidden");
+      if (!username || !password) {
+        message.textContent = "Username and password are required.";
+        return;
       }
-    });
 
-    async function submitData() {
-  const role = document.getElementById("roleSelect").value;
+      const formData = new FormData();
+      formData.append("username", username);
+      formData.append("password", password);
 
-  if (!role || !selectedFile) {
-    alert("Select role and upload resume");
-    return;
-  }
+      try {
+        const res = await fetch(`${API_BASE}/api/auth/${mode}`, {
+          method: "POST",
+          body: formData
+        });
+        const data = await res.json();
 
-  const formData = new FormData();
-  formData.append("file", selectedFile);
-  formData.append("role", role);
+        if (!res.ok) {
+          message.textContent = data.detail || "Authentication failed.";
+          return;
+        }
 
-  try {
-    const res = await fetch("http://127.0.0.1:8000/analyze", {
-      method: "POST",
-      body: formData
-    });
-
-    const data = await res.json();
-
-    // 🚀 Redirect to result page with data
-    const url = `result.html?score=${data.score}
-      &skills=${data.skills}
-      &experience=${data.experience}
-      &education=${data.education}
-      &projects=${data.projects}`;
-
-    window.location.href = url;
-
-  } catch {
-    alert("Error connecting to backend");
-  }
-}
+        localStorage.setItem("ats_user_id", data.user_id);
+        localStorage.setItem("ats_username", data.username);
+        window.location.href = "app.html";
+      } catch {
+        message.textContent = "Backend is not reachable. Start server first.";
+      }
+    }
   </script>
-
 </body>
 </html>
