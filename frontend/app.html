@@ -94,9 +94,7 @@
       if (window.RUNTIME_CONFIG && window.RUNTIME_CONFIG.API_BASE) {
         return window.RUNTIME_CONFIG.API_BASE;
       }
-      const host = window.location.hostname;
-      const safeHost = (!host || host === "0.0.0.0" || host === "::") ? "127.0.0.1" : host;
-      return `${window.location.protocol}//${safeHost}:8000`;
+      return window.location.origin; // Same-origin for single-service deployments
     }
     const API_BASE = getApiBase();
 

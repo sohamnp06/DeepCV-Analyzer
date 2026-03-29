@@ -17,6 +17,10 @@ def _env(name, default=None):
 
 
 def get_connection():
+    database_url = os.getenv("DATABASE_URL")
+    if database_url:
+        return psycopg2.connect(database_url)
+
     return psycopg2.connect(
         dbname=_env("POSTGRES_DB", "resume_tracker_db"),
         user=_env("POSTGRES_USER", "postgres"),

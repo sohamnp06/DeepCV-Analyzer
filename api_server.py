@@ -13,6 +13,8 @@ app = FastAPI(title="DeepCV Analyzer API")
 DB_READY = False
 DB_ERROR = ""
 
+from fastapi.staticfiles import StaticFiles
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[os.getenv("CORS_ORIGIN", "*")],
@@ -20,6 +22,8 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
 
 DEFAULT_JD = {
     "web_developer": "Looking for a web developer with HTML, CSS, JavaScript, React, Node, API and Git skills.",
@@ -139,3 +143,7 @@ async def analyze_resume(
             os.remove(temp_path)
         except OSError:
             pass
+
+# Mount frontend so the entire app can be deployed to a single free tier service
+if os.path.exists("frontend"):
+    app.mount("/", StaticFiles(directory="frontend", html=True), name="frontend")
