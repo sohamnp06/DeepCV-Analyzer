@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>ATS Resume Analyzer</title>
+
+  <!-- Tailwind CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-gradient-to-br from-black via-gray-900 to-gray-950 text-white min-h-screen">
+
+  <!-- Navbar -->
+  <nav class="flex justify-between items-center px-10 py-5">
+    <h1 class="text-2xl font-bold">ATS AI</h1>
+  </nav>
+
+  <!-- Hero -->
+  <section class="text-center py-16 px-6">
+    <h1 class="text-5xl font-extrabold mb-6">
+      AI Resume Screening System
+    </h1>
+    <p class="text-gray-400 max-w-xl mx-auto">
+      Upload resume and select job role to calculate ATS score.
+    </p>
+  </section>
+
+  <!-- MAIN SECTION -->
+  <section class="flex justify-center px-6 pb-20">
+    <div class="w-full max-w-2xl space-y-6">
+
+      <!-- 🔽 Job Role Dropdown -->
+      <div>
+        <label class="block mb-2 text-gray-300">Select Job Role</label>
+        <select id="roleSelect"
+          class="w-full p-3 rounded-xl bg-gray-900 border border-gray-700 text-white">
+          
+          <option value="">-- Choose Role --</option>
+          <option value="frontend">Frontend Developer</option>
+          <option value="backend">Backend Developer</option>
+          <option value="data">Data Scientist</option>
+          <option value="ml">Machine Learning Engineer</option>
+        </select>
+      </div>
+
+      <!-- 📂 Upload Section -->
+      <div id="uploadBox"
+        class="border-2 border-dashed border-gray-700 rounded-3xl p-10 text-center hover:border-white transition cursor-pointer">
+
+        <p class="text-lg text-gray-400 mb-3">
+          Drag & Drop Resume Here
+        </p>
+
+        <input type="file" id="fileInput" class="hidden">
+
+        <button onclick="document.getElementById('fileInput').click()"
+          class="bg-white text-black px-6 py-2 rounded-lg">
+          Choose File
+        </button>
+
+        <p id="fileName" class="mt-4 text-green-400 hidden"></p>
+      </div>
+
+      <!-- 🚀 Submit Button -->
+      <button onclick="submitData()"
+        class="w-full bg-white text-black py-3 rounded-xl font-semibold hover:scale-105 transition">
+        Analyze Resume
+      </button>
+
+      <!-- 📊 Result -->
+      <div id="result" class="text-center text-green-400 text-lg hidden"></div>
+
+    </div>
+  </section>
+
+  <!-- JS -->
+  <script>
+    const fileInput = document.getElementById("fileInput");
+    const fileName = document.getElementById("fileName");
+
+    let selectedFile = null;
+
+    fileInput.addEventListener("change", function () {
+      if (this.files.length > 0) {
+        selectedFile = this.files[0];
+        fileName.textContent = "Uploaded: " + selectedFile.name;
+        fileName.classList.remove("hidden");
+      }
+    });
+
+    async function submitData() {
+  const role = document.getElementById("roleSelect").value;
+
+  if (!role || !selectedFile) {
+    alert("Select role and upload resume");
+    return;
+  }
+
+  const formData = new FormData();
+  formData.append("file", selectedFile);
+  formData.append("role", role);
+
+  try {
+    const res = await fetch("http://127.0.0.1:8000/analyze", {
+      method: "POST",
+      body: formData
+    });
+
+    const data = await res.json();
+
+    // 🚀 Redirect to result page with data
+    const url = `result.html?score=${data.score}
+      &skills=${data.skills}
+      &experience=${data.experience}
+      &education=${data.education}
+      &projects=${data.projects}`;
+
+    window.location.href = url;
+
+  } catch {
+    alert("Error connecting to backend");
+  }
+}
+  </script>
+
+</body>
+</html>
