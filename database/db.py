@@ -5,7 +5,7 @@ def get_connection():
     return psycopg2.connect(
         dbname="resume_tracker_db",   # ✅ FIXED
         user="postgres",              # change if needed
-        password="your_password",
+        password="root",
         host="localhost",
         port="5432"
     )
