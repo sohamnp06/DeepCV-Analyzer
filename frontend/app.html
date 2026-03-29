@@ -4,19 +4,61 @@
   <meta charset="UTF-8">
   <title>ATS AI - Resume Analyzer</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <script src="runtime-config.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #0b0b0c;
+      color: white;
+    }
+    .bg-glow {
+      position: fixed;
+      width: 100%;
+      height: 100%;
+      background: radial-gradient(circle at 20% 40%, rgba(255,255,255,0.06), transparent 40%);
+      z-index: -1;
+    }
+    .card {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 16px;
+      padding: 24px;
+    }
+    .btn {
+      background: white;
+      color: black;
+      padding: 12px 24px;
+      border-radius: 10px;
+      font-weight: 500;
+      transition: 0.2s;
+    }
+    .btn:hover {
+      transform: translateY(-2px);
+    }
+    .input {
+      width: 100%;
+      padding: 12px;
+      border-radius: 10px;
+      background: rgba(0,0,0,0.55);
+      border: 1px solid rgba(255,255,255,0.18);
+    }
+  </style>
 </head>
-<body class="bg-black text-white min-h-screen">
-  <nav class="flex justify-between items-center px-10 py-5 border-b border-gray-800">
+<body class="min-h-screen">
+  <div class="bg-glow"></div>
+  <nav class="flex justify-between items-center px-10 py-6">
     <h1 class="text-2xl font-bold">ATS AI - Project</h1>
-    <button onclick="logout()" class="text-sm bg-gray-800 px-4 py-2 rounded-lg border border-gray-700">Logout</button>
+    <button onclick="logout()" class="text-sm rounded-lg border border-gray-700 px-4 py-2">Logout</button>
   </nav>
 
   <main class="max-w-4xl mx-auto p-6 space-y-6">
     <h2 class="text-3xl font-bold">Upload Resume</h2>
 
+    <div class="card space-y-5">
     <div class="space-y-3">
       <label class="block text-gray-300">Role</label>
-      <select id="role" class="w-full p-3 rounded-xl bg-gray-900 border border-gray-700">
+      <select id="role" class="input">
         <option value="">Select role</option>
         <option value="web_developer">Web Developer</option>
         <option value="software_developer">Software Developer</option>
@@ -26,16 +68,17 @@
 
     <div class="space-y-3">
       <label class="block text-gray-300">Job Description (optional custom JD)</label>
-      <textarea id="jd" rows="4" class="w-full p-3 rounded-xl bg-gray-900 border border-gray-700"
+      <textarea id="jd" rows="4" class="input"
         placeholder="Paste JD if you want custom JD matching..."></textarea>
     </div>
 
     <input id="resume" type="file" accept=".pdf" class="block w-full text-sm text-gray-200">
 
     <button onclick="analyze()"
-      class="w-full bg-white text-black py-3 rounded-xl font-semibold hover:opacity-90">Analyze Resume</button>
+      class="btn w-full">Analyze Resume</button>
+    </div>
 
-    <section id="result" class="hidden bg-gray-900/70 border border-gray-800 rounded-2xl p-6 space-y-4">
+    <section id="result" class="hidden card space-y-4">
       <h3 class="text-2xl font-bold">Analysis Result</h3>
       <p><strong>ATS Score:</strong> <span id="atsScore"></span></p>
       <p><strong>JD Match:</strong> <span id="jdMatch"></span></p>
@@ -47,7 +90,15 @@
   </main>
 
   <script>
-    const API_BASE = "http://127.0.0.1:8000";
+    function getApiBase() {
+      if (window.RUNTIME_CONFIG && window.RUNTIME_CONFIG.API_BASE) {
+        return window.RUNTIME_CONFIG.API_BASE;
+      }
+      const host = window.location.hostname;
+      const safeHost = (!host || host === "0.0.0.0" || host === "::") ? "127.0.0.1" : host;
+      return `${window.location.protocol}//${safeHost}:8000`;
+    }
+    const API_BASE = getApiBase();
 
     const userId = localStorage.getItem("ats_user_id");
     if (!userId) {
@@ -96,7 +147,7 @@
         document.getElementById("missingSkills").textContent = (data.missing_skills || []).join(", ") || "None";
         document.getElementById("recommendations").textContent = (data.recommendations || []).join(" | ");
       } catch {
-        alert("Could not connect to backend.");
+        alert("Could not connect to backend. Check backend terminal logs.");
       }
     }
   </script>

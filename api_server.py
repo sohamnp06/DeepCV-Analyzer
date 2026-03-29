@@ -1,23 +1,17 @@
 import os
 import tempfile
 
-from dotenv import load_dotenv
 from fastapi import FastAPI, File, Form, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 
+from config import load_env_file
 from database.db import init_db, insert_result, login_user, register_user
-from nlp.section_classifier import get_structured_sections
-from parser.extract_text import extract_text
-from parser.utils import clean_text
-from scoring.jd_matcher import match_resume_to_jd
-from scoring.scorer import compute_score
-from scoring.section_scorer import evaluate_sections
-from scoring.semantic_matcher import semantic_match
-from scoring.skill_gap import generate_skill_gap
 
-load_dotenv()
+load_env_file()
 
 app = FastAPI(title="DeepCV Analyzer API")
+DB_READY = False
+DB_ERROR = ""
 
 app.add_middleware(
     CORSMiddleware,
@@ -36,16 +30,32 @@ DEFAULT_JD = {
 
 @app.on_event("startup")
 def startup_event():
-    init_db()
+    global DB_READY, DB_ERROR
+    try:
+        init_db()
+        DB_READY = True
+        DB_ERROR = ""
+    except Exception as exc:
+        DB_READY = False
+        DB_ERROR = str(exc)
 
 
 @app.get("/api/health")
 def health():
-    return {"status": "ok"}
+    return {"status": "ok", "db_ready": DB_READY, "db_error": DB_ERROR}
+
+
+def _ensure_db_ready():
+    if not DB_READY:
+        raise HTTPException(
+            status_code=503,
+            detail=f"Database not ready. Check PostgreSQL/.env. {DB_ERROR}",
+        )
 
 
 @app.post("/api/auth/register")
 def register(username: str = Form(...), password: str = Form(...)):
+    _ensure_db_ready()
     try:
         user_id = register_user(username.strip(), password)
         return {"user_id": user_id, "username": username.strip()}
@@ -55,6 +65,7 @@ def register(username: str = Form(...), password: str = Form(...)):
 
 @app.post("/api/auth/login")
 def login(username: str = Form(...), password: str = Form(...)):
+    _ensure_db_ready()
     user = login_user(username.strip(), password)
     if not user:
         raise HTTPException(status_code=401, detail="Invalid username or password")
@@ -68,6 +79,17 @@ async def analyze_resume(
     user_id: int = Form(...),
     job_description: str = Form(""),
 ):
+    _ensure_db_ready()
+    # Lazy-load heavy NLP/ML modules so auth endpoints stay fast and backend boots quickly.
+    from nlp.section_classifier import get_structured_sections
+    from parser.extract_text import extract_text
+    from parser.utils import clean_text
+    from scoring.jd_matcher import match_resume_to_jd
+    from scoring.scorer import compute_score
+    from scoring.section_scorer import evaluate_sections
+    from scoring.semantic_matcher import semantic_match
+    from scoring.skill_gap import generate_skill_gap
+
     if role not in DEFAULT_JD:
         raise HTTPException(status_code=400, detail="Invalid role selected")
 
