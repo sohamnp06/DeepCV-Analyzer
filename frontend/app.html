@@ -56,36 +56,58 @@
     <h2 class="text-3xl font-bold">Upload Resume</h2>
 
     <div class="card space-y-5">
-    <div class="space-y-3">
-      <label class="block text-gray-300">Role</label>
-      <select id="role" class="input">
-        <option value="">Select role</option>
-        <option value="web_developer">Web Developer</option>
-        <option value="software_developer">Software Developer</option>
-        <option value="data_scientist">Data Scientist</option>
-      </select>
+      <div class="p-4 border border-dashed border-gray-600 rounded-xl bg-gray-900 mx-auto text-center hover:bg-gray-800 transition">
+        <label for="resume" class="cursor-pointer block text-lg font-semibold text-gray-300 mb-2">Select your Resume PDF</label>
+        <input id="resume" type="file" accept=".pdf" class="block w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-white file:text-black hover:file:bg-gray-200 cursor-pointer">
+      </div>
+
+      <button onclick="analyze()" id="scanBtn" class="btn w-full flex justify-center items-center">
+        <span>Scan Resume ✨</span>
+      </button>
     </div>
 
-    <div class="space-y-3">
-      <label class="block text-gray-300">Job Description (optional custom JD)</label>
-      <textarea id="jd" rows="4" class="input"
-        placeholder="Paste JD if you want custom JD matching..."></textarea>
-    </div>
+    <!-- Output UI -->
+    <section id="result" class="hidden space-y-6">
+      <div class="card text-center bg-gray-900 border-green-900 border">
+        <h3 class="text-xl font-bold text-gray-400">Inferred Job Role</h3>
+        <p id="inferredRole" class="text-3xl font-bold text-green-400 mt-2"></p>
+      </div>
 
-    <input id="resume" type="file" accept=".pdf" class="block w-full text-sm text-gray-200">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <!-- ATS Score Card -->
+        <div class="card text-center flex flex-col justify-center items-center py-8">
+          <p class="text-gray-400 mb-2">ATS Score</p>
+          <div class="text-5xl font-bold text-white"><span id="atsScore">0</span></div>
+        </div>
+        <!-- JD Match Card -->
+        <div class="card text-center flex flex-col justify-center items-center py-8">
+          <p class="text-gray-400 mb-2">Job Match Compatibility</p>
+          <div class="text-5xl font-bold text-blue-400"><span id="jdMatch">0</span></div>
+        </div>
+      </div>
 
-    <button onclick="analyze()"
-      class="btn w-full">Analyze Resume</button>
-    </div>
+      <!-- Skills Section -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="card">
+          <h4 class="text-lg font-bold text-gray-300 mb-3 block border-b border-gray-800 pb-2">Matched Skills ✅</h4>
+          <p id="matchedSkills" class="text-green-300 leading-relaxed"></p>
+        </div>
+        <div class="card">
+          <h4 class="text-lg font-bold text-gray-300 mb-3 block border-b border-gray-800 pb-2">Missing Skills ❌</h4>
+          <p id="missingSkills" class="text-red-400 leading-relaxed"></p>
+        </div>
+      </div>
 
-    <section id="result" class="hidden card space-y-4">
-      <h3 class="text-2xl font-bold">Analysis Result</h3>
-      <p><strong>ATS Score:</strong> <span id="atsScore"></span></p>
-      <p><strong>JD Match:</strong> <span id="jdMatch"></span></p>
-      <p><strong>Section Quality:</strong> <span id="sectionQuality"></span></p>
-      <p><strong>Matched Skills:</strong> <span id="matchedSkills"></span></p>
-      <p><strong>Missing Skills:</strong> <span id="missingSkills"></span></p>
-      <p><strong>Recommendations:</strong> <span id="recommendations"></span></p>
+      <!-- Detail & Recs -->
+      <div class="card">
+        <h4 class="text-lg font-bold text-gray-300 mb-3 block border-b border-gray-800 pb-2">Improvements & Recommendations 💡</h4>
+        <ul id="recommendations" class="list-disc list-inside text-gray-400 space-y-2"></ul>
+      </div>
+      
+      <div class="card">
+        <h4 class="text-lg font-bold text-gray-300 mb-3 block border-b border-gray-800 pb-2">Section Quality Breakdown</h4>
+        <div id="sectionQuality" class="grid grid-cols-3 gap-2 text-center text-sm font-semibold"></div>
+      </div>
     </section>
   </main>
 
@@ -110,19 +132,19 @@
     }
 
     async function analyze() {
-      const role = document.getElementById("role").value;
-      const jd = document.getElementById("jd").value;
       const file = document.getElementById("resume").files[0];
+      const btn = document.getElementById("scanBtn");
 
-      if (!role || !file) {
-        alert("Please select a role and upload a PDF.");
+      if (!file) {
+        alert("Please upload a PDF.");
         return;
       }
 
+      btn.textContent = "Scanning...";
+      btn.disabled = true;
+
       const formData = new FormData();
-      formData.append("role", role);
       formData.append("user_id", userId);
-      formData.append("job_description", jd);
       formData.append("file", file);
 
       try {
@@ -131,6 +153,9 @@
           body: formData
         });
         const data = await res.json();
+        
+        btn.innerHTML = "<span>Scan Resume ✨</span>";
+        btn.disabled = false;
 
         if (!res.ok) {
           alert(data.detail || "Analysis failed.");
@@ -138,13 +163,28 @@
         }
 
         document.getElementById("result").classList.remove("hidden");
+        document.getElementById("inferredRole").textContent = data.inferred_role || "Unknown Role";
         document.getElementById("atsScore").textContent = `${data.ats_score}%`;
         document.getElementById("jdMatch").textContent = `${data.jd_match}%`;
-        document.getElementById("sectionQuality").textContent = JSON.stringify(data.section_quality);
-        document.getElementById("matchedSkills").textContent = (data.matched_skills || []).join(", ") || "None";
-        document.getElementById("missingSkills").textContent = (data.missing_skills || []).join(", ") || "None";
-        document.getElementById("recommendations").textContent = (data.recommendations || []).join(" | ");
+        
+        // Render sections beautifully
+        const sq = data.section_quality || {};
+        const sqHtml = Object.keys(sq).map(k => {
+            const val = sq[k];
+            const color = val === "Good" ? "text-green-400" : (val === "Missing" ? "text-red-400" : "text-yellow-400");
+            return `<div class="p-3 bg-gray-800 rounded"><span class="block text-gray-500 capitalize mb-1">${k}</span><span class="${color}">${val}</span></div>`;
+        }).join('');
+        document.getElementById("sectionQuality").innerHTML = sqHtml;
+
+        document.getElementById("matchedSkills").textContent = (data.matched_skills || []).join(" • ") || "None";
+        document.getElementById("missingSkills").textContent = (data.missing_skills || []).join(" • ") || "None";
+        
+        const recsHtml = (data.recommendations || []).map(r => `<li>${r}</li>`).join("");
+        document.getElementById("recommendations").innerHTML = recsHtml || "<li>Looks good!</li>";
+
       } catch {
+        btn.innerHTML = "<span>Scan Resume ✨</span>";
+        btn.disabled = false;
         alert("Could not connect to backend. Check backend terminal logs.");
       }
     }

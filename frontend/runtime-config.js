@@ -1,1 +1,1 @@
-window.RUNTIME_CONFIG = { API_BASE: 'http://127.0.0.1:8001' };
+window.RUNTIME_CONFIG = { API_BASE: 'http://localhost:8081' };

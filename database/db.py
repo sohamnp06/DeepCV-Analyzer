@@ -109,6 +109,16 @@ def login_user(username, password):
     return user if user else None
 
 
+def check_user_exists(username):
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT id FROM users WHERE username=%s", (username,))
+    user = cursor.fetchone()
+    cursor.close()
+    conn.close()
+    return user is not None
+
+
 # -----------------------------
 # INSERT RESULT
 # -----------------------------
