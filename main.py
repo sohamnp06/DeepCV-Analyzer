@@ -34,7 +34,6 @@ else:
 
     print("Login successful!")
 
-
 # -----------------------------
 # MODEL PIPELINE
 # -----------------------------
