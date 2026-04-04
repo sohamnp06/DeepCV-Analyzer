@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Login - ATS AI</title>
+
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+const supabase = window.supabase.createClient(
+  "gemrnynqaybekowzlpxy.supabase.co",
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdlbXJueW5xYXliZWtvd3pscHh5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUyODEzOTgsImV4cCI6MjA5MDg1NzM5OH0.zzu_a_kVxguQgxY-x_zACV5Ph5oF5PTUB2BeQxYVvHE"
+);
+</script>
+
+
+<style>
+body {
+  font-family: 'Inter', sans-serif;
+  background: #0b0b0c;
+  color: white;
+}
+
+/* glow */
+.bg-glow {
+  position: fixed;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.06), transparent 40%);
+  z-index: -1;
+}
+
+/* glass card */
+.card {
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.1);
+  backdrop-filter: blur(10px);
+  border-radius: 16px;
+  padding: 32px;
+}
+
+/* input */
+.input {
+  width: 100%;
+  padding: 12px;
+  background: transparent;
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 10px;
+  color: white;
+}
+
+.input:focus {
+  outline: none;
+  border-color: white;
+}
+
+/* button */
+.btn {
+  width: 100%;
+  background: white;
+  color: black;
+  padding: 12px;
+  border-radius: 10px;
+  font-weight: 500;
+  transition: 0.2s;
+}
+.btn:hover {
+  transform: translateY(-2px);
+}
+</style>
+
+</head>
+
+<body>
+
+<div class="bg-glow"></div>
+
+<!-- CENTER CONTAINER -->
+<div class="min-h-screen flex items-center justify-center px-6">
+
+  <div class="card w-full max-w-md">
+
+    <!-- LOGO -->
+    <h2 class="text-2xl font-semibold mb-2 text-center">ATS AI</h2>
+    <p class="text-gray-400 text-center mb-8">Welcome  </p>
+
+    <!-- FORM -->
+    <form>
+
+      <div class="mb-4">
+        <label class="text-sm text-gray-400">Email</label>
+        <input type="email" class="input mt-2" placeholder="you@example.com">
+      </div>
+
+      <div class="mb-6">
+        <label class="text-sm text-gray-400">Password</label>
+        <input type="password" class="input mt-2" placeholder="••••••••">
+      </div>
+
+      <button href="index.html" class="btn">Login</button>
+
+    </form>
+
+    <!-- EXTRA -->
+    <div class="text-center mt-6 text-sm text-gray-400">
+      Don’t have an account?
+      <a href="signup.html" class="text-white underline">Sign up</a>
+    </div>
+
+  </div>
+
+</div>
+
+</body>
+
+<script>
+async function login() {
+  const email = document.getElementById("email").value;
+  const password = document.getElementById("password").value;
+
+  const { data, error } = await supabase.auth.signInWithPassword({
+    email: email,
+    password: password
+  });
+
+  if (error) {
+    alert(error.message);
+  } else {
+    alert("Login successful ");
+    window.location.href = "upload.html"; // redirect
+  }
+}
+</script>
+
+</html>
+

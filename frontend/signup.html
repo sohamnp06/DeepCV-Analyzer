@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Signup - ATS AI</title>
+
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<style>
+body {
+  background: #0b0b0c;
+  color: white;
+  font-family: sans-serif;
+}
+</style>
+</head>
+
+<body class="flex items-center justify-center h-screen">
+
+<div class="bg-white/5 p-8 rounded-2xl backdrop-blur-md w-[400px]">
+
+  <h2 class="text-2xl mb-6 text-center font-semibold">Create Account</h2>
+
+  <!-- STEP 1 -->
+  <div id="step1">
+    <input id="fname" placeholder="First Name"
+      class="w-full mb-3 p-3 rounded bg-black/40 border border-white/10">
+
+    <input id="lname" placeholder="Last Name"
+      class="w-full mb-3 p-3 rounded bg-black/40 border border-white/10">
+
+    <input id="email" type="email" placeholder="Email"
+      class="w-full mb-4 p-3 rounded bg-black/40 border border-white/10">
+
+    <button onclick="sendVerification()"
+      class="w-full bg-blue-500 hover:bg-blue-600 p-3 rounded">
+      Verify Email
+    </button>
+  </div>
+
+  <!-- STEP 2 -->
+  <div id="step2" class="hidden">
+    <p class="text-center text-gray-400 mb-4">
+      Email verified ✅<br>Now set your password
+    </p>
+
+    <input id="password" type="password" placeholder="Set Password"
+      class="w-full mb-4 p-3 rounded bg-black/40 border border-white/10">
+
+    <button onclick="setPassword()"
+      class="w-full bg-green-500 hover:bg-green-600 p-3 rounded">
+      Complete Signup
+    </button>
+  </div>
+
+</div>
+
+<script>
+const supabase = window.supabase.createClient(
+  "gemrnynqaybekowzlpxy.supabase.co",
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdlbXJueW5xYXliZWtvd3pscHh5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUyODEzOTgsImV4cCI6MjA5MDg1NzM5OH0.zzu_a_kVxguQgxY-x_zACV5Ph5oF5PTUB2BeQxYVvHE"
+);
+
+let userEmail = "";
+
+// STEP 1 → send verification
+async function sendVerification() {
+  const email = document.getElementById("email").value;
+  const fname = document.getElementById("fname").value;
+  const lname = document.getElementById("lname").value;
+
+  userEmail = email;
+
+  const { data, error } = await supabase.auth.signUp({
+    email: email,
+    password: "Temp@123456", // temporary password
+    options: {
+      data: {
+        first_name: fname,
+        last_name: lname
+      }
+    }
+  });
+
+  if (error) {
+    alert(error.message);
+  } else {
+    alert("Check your Gmail to verify your email 🚀");
+
+    // simulate step switch after user verifies
+    document.getElementById("step1").classList.add("hidden");
+    document.getElementById("step2").classList.remove("hidden");
+  }
+}
+
+// STEP 2 → set real password
+async function setPassword() {
+  const password = document.getElementById("password").value;
+
+  const { data, error } = await supabase.auth.updateUser({
+    password: password
+  });
+
+  if (error) {
+    alert(error.message);
+  } else {
+    alert("Signup complete ✅");
+
+    window.location.href = "login.html";
+  }
+}
+</script>
+
+</body>
+</html>
