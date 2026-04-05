@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Upload Resume - ATS AI</title>
+
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+<script src="config.js"></script>
+<script src="api.js"></script>
+
+<style>
+body {
+  font-family: 'Inter', sans-serif;
+  background: #0b0b0c;
+  color: white;
+  margin: 0;
+  overflow-x: hidden;
+}
+
+/* 🔥 THE ORIGINAL BLUE GRID UI 🔥 */
+.hero-grid {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  z-index: -1;
+}
+.hero-grid::before {
+  content: "";
+  position: absolute;
+  width: 200%;
+  height: 200%;
+  top: -50%;
+  left: -50%;
+  background-image:
+    linear-gradient(rgba(59,130,246,0.35) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(59,130,246,0.35) 1px, transparent 1px);
+  background-size: 30px 30px;
+  filter: drop-shadow(0 0 10px rgba(59,130,246,0.5));
+}
+
+/* Glass Navbar */
+nav.custom-nav {
+  position: fixed;
+  top: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 90%;
+  max-width: 1000px;
+  z-index: 100;
+  background: rgba(255,255,255,0.05);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 16px;
+  padding: 16px 32px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.upload-card {
+  max-width: 600px;
+  margin: 160px auto 60px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.08);
+  backdrop-filter: blur(12px);
+  border-radius: 20px;
+  padding: 48px;
+  text-align: center;
+}
+
+.drop-zone {
+  border: 2px dashed rgba(59,130,246,0.3);
+  border-radius: 12px;
+  padding: 40px;
+  margin-bottom: 24px;
+  cursor: pointer;
+  transition: 0.2s;
+}
+.drop-zone:hover {
+  background: rgba(59,130,246,0.05);
+  border-color: #3b82f6;
+}
+
+.btn {
+  background: #3b82f6;
+  color: white;
+  padding: 14px 28px;
+  border-radius: 10px;
+  font-weight: 600;
+  transition: 0.2s;
+  width: 100%;
+}
+.btn:disabled {
+  background: #252525;
+  color: #555;
+}
+</style>
+</head>
+
+<body>
+
+<div class="hero-grid"></div>
+
+<!-- NAVBAR (WITH HOME & LOGOUT) -->
+<nav class="custom-nav">
+  <h1 class="text-md font-semibold">पाशिळकरांचा वाघ Resume Screening</h1>
+  <div class="flex space-x-8 text-sm font-medium">
+    <a href="index.html" class="text-gray-400 hover:text-white transition">Home</a>
+    <button onclick="logout()" class="text-gray-400 hover:text-white transition">Logout</button>
+  </div>
+</nav>
+
+<div class="upload-card">
+    <h2 class="text-3xl font-bold mb-4">Analyze Your Resume</h2>
+    <p class="text-gray-400 mb-10">Upload a PDF to see your ATS ranking instantly.</p>
+    
+    <div id="uploadForm">
+        <label for="fileInput" class="drop-zone block">
+            <div class="text-5xl mb-4">📄</div>
+            <p id="fileName" class="text-gray-300 font-medium tracking-wide">Drop PDF or Click to browse</p>
+            <input type="file" id="fileInput" class="hidden" accept=".pdf" onchange="handleFileSelect(event)">
+        </label>
+        
+        <button id="analyzeBtn" class="btn" onclick="analyzeResume()" disabled>Start Analysis</button>
+    </div>
+
+    <!-- LOADING STATE -->
+    <div id="loadingState" class="hidden py-8">
+        <div class="text-xl font-bold mb-2 animate-pulse text-blue-400">Deep AI Processing...</div>
+        <p class="text-gray-500 text-sm">Extracting semantics, matches, and career gaps.</p>
+    </div>
+</div>
+
+<script>
+    const userId = localStorage.getItem("user_id");
+    if (!userId) { window.location.href = "login.html"; }
+
+    let selectedFile = null;
+
+    function handleFileSelect(e) {
+        const file = e.target.files[0];
+        if (file && file.type === "application/pdf") {
+            selectedFile = file;
+            const fileNameEl = document.getElementById("fileName");
+            fileNameEl.textContent = file.name;
+            fileNameEl.classList.add("text-blue-400");
+            document.getElementById("analyzeBtn").disabled = false;
+        } else {
+            alert("Please select a valid PDF file.");
+        }
+    }
+
+    async function analyzeResume() {
+        if (!selectedFile) return;
+        
+        const formData = new FormData();
+        formData.append("file", selectedFile);
+        formData.append("user_id", userId);
+
+        document.getElementById("uploadForm").classList.add("hidden");
+        document.getElementById("loadingState").classList.remove("hidden");
+
+        try {
+            const result = await apiCall("/api/analyze", {
+                method: "POST",
+                body: formData
+            });
+            localStorage.setItem("last_result", JSON.stringify(result));
+            window.location.href = "result.html";
+        } catch (err) {
+            alert("Analysis failed: " + err.message);
+            document.getElementById("uploadForm").classList.remove("hidden");
+            document.getElementById("loadingState").classList.add("hidden");
+        }
+    }
+
+    function logout() {
+        localStorage.removeItem("user_id");
+        window.location.href = "login.html";
+    }
+</script>
+
+</body>
+</html>

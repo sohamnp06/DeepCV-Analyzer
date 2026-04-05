@@ -6,56 +6,78 @@
 
 <script src="https://cdn.tailwindcss.com"></script>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script>
-const supabase = window.supabase.createClient(
-  "gemrnynqaybekowzlpxy.supabase.co",
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdlbXJueW5xYXliZWtvd3pscHh5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUyODEzOTgsImV4cCI6MjA5MDg1NzM5OH0.zzu_a_kVxguQgxY-x_zACV5Ph5oF5PTUB2BeQxYVvHE"
-);
-</script>
-
+<script src="config.js"></script>
+<script src="api.js"></script>
 
 <style>
 body {
   font-family: 'Inter', sans-serif;
   background: #0b0b0c;
   color: white;
+  margin: 0;
+  overflow: hidden;
 }
 
-/* glow */
-.bg-glow {
+/* 🔥 THE ORIGINAL BLUE GRID UI 🔥 */
+.hero-grid {
   position: fixed;
-  width: 100%;
-  height: 100%;
-  background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.06), transparent 40%);
+  inset: 0;
+  overflow: hidden;
   z-index: -1;
 }
+.hero-grid::before {
+  content: "";
+  position: absolute;
+  width: 200%;
+  height: 200%;
+  top: -50%;
+  left: -50%;
+  background-image:
+    linear-gradient(rgba(59,130,246,0.35) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(59,130,246,0.35) 1px, transparent 1px);
+  background-size: 30px 30px;
+  filter: drop-shadow(0 0 10px rgba(59,130,246,0.5));
+}
 
-/* glass card */
+/* Glass Navbar */
+nav.custom-nav {
+  position: fixed;
+  top: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 90%;
+  max-width: 1000px;
+  z-index: 100;
+  background: rgba(255,255,255,0.05);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 16px;
+  padding: 16px 32px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
 .card {
   background: rgba(255,255,255,0.05);
   border: 1px solid rgba(255,255,255,0.1);
   backdrop-filter: blur(10px);
   border-radius: 16px;
   padding: 32px;
+  width: 100%;
+  max-width: 400px;
 }
 
-/* input */
 .input {
   width: 100%;
   padding: 12px;
-  background: transparent;
+  background: rgba(0,0,0,0.3);
   border: 1px solid rgba(255,255,255,0.1);
   border-radius: 10px;
   color: white;
 }
+.input:focus { outline: none; border-color: rgba(59,130,246,0.5); }
 
-.input:focus {
-  outline: none;
-  border-color: white;
-}
-
-/* button */
 .btn {
   width: 100%;
   background: white;
@@ -64,74 +86,67 @@ body {
   border-radius: 10px;
   font-weight: 500;
   transition: 0.2s;
+  cursor: pointer;
 }
-.btn:hover {
-  transform: translateY(-2px);
-}
+.btn:hover { transform: translateY(-2px); box-shadow: 0 4px 20px rgba(255,255,255,0.1); }
 </style>
-
 </head>
 
-<body>
+<body class="min-h-screen flex items-center justify-center">
 
-<div class="bg-glow"></div>
+<div class="hero-grid"></div>
 
-<!-- CENTER CONTAINER -->
-<div class="min-h-screen flex items-center justify-center px-6">
+<!-- NAVBAR (WITH HOME & LOGOUT) -->
+<nav class="custom-nav">
+  <h1 class="text-md font-semibold text-white">पाशिळकरांचा वाघ Resume Screening</h1>
+  <div class="flex space-x-8 text-sm font-medium">
+    <a href="index.html" class="text-gray-400 hover:text-white transition">Home</a>
+    <button onclick="logout()" class="text-gray-400 hover:text-white transition">Logout</button>
+  </div>
+</nav>
 
-  <div class="card w-full max-w-md">
+<div class="card mt-12">
+    <h2 class="text-2xl font-bold mb-2 text-center">Login</h2>
+    <p class="text-gray-400 text-center mb-8">Access your deep analysis</p>
 
-    <!-- LOGO -->
-    <h2 class="text-2xl font-semibold mb-2 text-center">ATS AI</h2>
-    <p class="text-gray-400 text-center mb-8">Welcome  </p>
-
-    <!-- FORM -->
-    <form>
-
-      <div class="mb-4">
-        <label class="text-sm text-gray-400">Email</label>
-        <input type="email" class="input mt-2" placeholder="you@example.com">
+    <div class="space-y-4">
+      <div>
+        <label class="text-xs text-gray-500 uppercase tracking-widest">Username</label>
+        <input type="text" id="username" class="input mt-1" placeholder="Enter username">
       </div>
-
-      <div class="mb-6">
-        <label class="text-sm text-gray-400">Password</label>
-        <input type="password" class="input mt-2" placeholder="••••••••">
+      <div>
+        <label class="text-xs text-gray-500 uppercase tracking-widest">Password</label>
+        <input type="password" id="password" class="input mt-1" placeholder="••••••••">
       </div>
-
-      <button href="index.html" class="btn">Login</button>
-
-    </form>
-
-    <!-- EXTRA -->
-    <div class="text-center mt-6 text-sm text-gray-400">
-      Don’t have an account?
-      <a href="signup.html" class="text-white underline">Sign up</a>
+      <button onclick="login()" class="btn">Sign In</button>
     </div>
 
-  </div>
-
+    <div class="text-center mt-6 text-sm text-gray-400">
+      Don’t have an account? <a href="signup.html" class="text-white underline">Sign up</a>
+    </div>
 </div>
-
-</body>
 
 <script>
 async function login() {
-  const email = document.getElementById("email").value;
-  const password = document.getElementById("password").value;
+  const u = document.getElementById("username").value;
+  const p = document.getElementById("password").value;
+  if (!u || !p) return alert("Fill all fields");
 
-  const { data, error } = await supabase.auth.signInWithPassword({
-    email: email,
-    password: password
-  });
+  try {
+    const fd = new FormData();
+    fd.append("username", u);
+    fd.append("password", p);
+    const res = await apiCall("/api/auth/login", { method: "POST", body: fd });
+    localStorage.setItem("user_id", res.user_id);
+    window.location.href = "upload.html";
+  } catch (e) { alert(e.message); }
+}
 
-  if (error) {
-    alert(error.message);
-  } else {
-    alert("Login successful ");
-    window.location.href = "upload.html"; // redirect
-  }
+function logout() {
+  localStorage.removeItem("user_id");
+  window.location.href = "login.html";
 }
 </script>
 
+</body>
 </html>
-

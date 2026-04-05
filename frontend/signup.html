@@ -5,109 +5,151 @@
 <title>Signup - ATS AI</title>
 
 <script src="https://cdn.tailwindcss.com"></script>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+<script src="config.js"></script>
+<script src="api.js"></script>
 
 <style>
 body {
+  font-family: 'Inter', sans-serif;
   background: #0b0b0c;
   color: white;
-  font-family: sans-serif;
+}
+
+/* glow */
+.bg-glow {
+  position: fixed;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(circle at 70% 30%, rgba(59,130,246,0.1), transparent 40%);
+  z-index: -1;
+}
+
+/* glass card */
+.card {
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.1);
+  backdrop-filter: blur(10px);
+  border-radius: 16px;
+  padding: 32px;
+}
+
+/* input */
+.input {
+  width: 100%;
+  padding: 12px;
+  background: transparent;
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 10px;
+  color: white;
+  margin-top: 8px;
+}
+
+.input:focus {
+  outline: none;
+  border-color: white;
+}
+
+/* button */
+.btn {
+  width: 100%;
+  background: white;
+  color: black;
+  padding: 12px;
+  border-radius: 10px;
+  font-weight: 500;
+  transition: 0.2s;
+}
+.btn:hover {
+  transform: translateY(-2px);
+}
+.btn-blue {
+  background: #3b82f6;
+  color: white;
 }
 </style>
+
 </head>
 
-<body class="flex items-center justify-center h-screen">
+<body>
 
-<div class="bg-white/5 p-8 rounded-2xl backdrop-blur-md w-[400px]">
+<div class="bg-glow"></div>
 
-  <h2 class="text-2xl mb-6 text-center font-semibold">Create Account</h2>
+<div class="min-h-screen flex items-center justify-center px-6">
 
-  <!-- STEP 1 -->
-  <div id="step1">
-    <input id="fname" placeholder="First Name"
-      class="w-full mb-3 p-3 rounded bg-black/40 border border-white/10">
+  <div class="card w-full max-w-md">
 
-    <input id="lname" placeholder="Last Name"
-      class="w-full mb-3 p-3 rounded bg-black/40 border border-white/10">
+    <h2 class="text-2xl font-semibold mb-2 text-center">Create Account</h2>
+    <p class="text-gray-400 text-center mb-8">Join ATS AI today</p>
 
-    <input id="email" type="email" placeholder="Email"
-      class="w-full mb-4 p-3 rounded bg-black/40 border border-white/10">
+    <!-- STEP 1 -->
+    <div id="step1">
+      <div class="mb-4">
+        <label class="text-sm text-gray-400">First Name</label>
+        <input type="text" id="fname" class="input" placeholder="John">
+      </div>
 
-    <button onclick="sendVerification()"
-      class="w-full bg-blue-500 hover:bg-blue-600 p-3 rounded">
-      Verify Email
-    </button>
-  </div>
+      <div class="mb-4">
+        <label class="text-sm text-gray-400">Last Name</label>
+        <input type="text" id="lname" class="input" placeholder="Doe">
+      </div>
 
-  <!-- STEP 2 -->
-  <div id="step2" class="hidden">
-    <p class="text-center text-gray-400 mb-4">
-      Email verified ✅<br>Now set your password
-    </p>
+      <div class="mb-6">
+        <label class="text-sm text-gray-400">Email Address</label>
+        <input type="email" id="email" class="input" placeholder="john@example.com">
+      </div>
 
-    <input id="password" type="password" placeholder="Set Password"
-      class="w-full mb-4 p-3 rounded bg-black/40 border border-white/10">
+      <button onclick="sendVerification()" class="btn btn-blue">Continue</button>
+    </div>
 
-    <button onclick="setPassword()"
-      class="w-full bg-green-500 hover:bg-green-600 p-3 rounded">
-      Complete Signup
-    </button>
+    <!-- STEP 2 -->
+    <div id="step2" class="hidden">
+      <div class="text-center mb-6">
+        <span class="bg-green-500/20 text-green-400 px-3 py-1 rounded-full text-xs font-semibold">Email Verified</span>
+      </div>
+
+      <div class="mb-6">
+        <label class="text-sm text-gray-400">Set Password</label>
+        <input type="password" id="password" class="input" placeholder="••••••••">
+      </div>
+
+      <button onclick="setPassword()" class="btn">Complete Signup</button>
+    </div>
+
+    <div class="text-center mt-6 text-sm text-gray-400">
+      Already have an account?
+      <a href="login.html" class="text-white underline">Login</a>
+    </div>
+
   </div>
 
 </div>
 
 <script>
-const supabase = window.supabase.createClient(
-  "gemrnynqaybekowzlpxy.supabase.co",
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdlbXJueW5xYXliZWtvd3pscHh5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUyODEzOTgsImV4cCI6MjA5MDg1NzM5OH0.zzu_a_kVxguQgxY-x_zACV5Ph5oF5PTUB2BeQxYVvHE"
-);
-
-let userEmail = "";
-
-// STEP 1 → send verification
 async function sendVerification() {
   const email = document.getElementById("email").value;
   const fname = document.getElementById("fname").value;
-  const lname = document.getElementById("lname").value;
-
-  userEmail = email;
-
-  const { data, error } = await supabase.auth.signUp({
-    email: email,
-    password: "Temp@123456", // temporary password
-    options: {
-      data: {
-        first_name: fname,
-        last_name: lname
-      }
-    }
-  });
-
-  if (error) {
-    alert(error.message);
-  } else {
-    alert("Check your Gmail to verify your email 🚀");
-
-    // simulate step switch after user verifies
-    document.getElementById("step1").classList.add("hidden");
-    document.getElementById("step2").classList.remove("hidden");
-  }
+  if (!email || !fname) { alert("Please fill in required fields"); return; }
+  
+  window._signupUsername = email;
+  document.getElementById("step1").classList.add("hidden");
+  document.getElementById("step2").classList.remove("hidden");
 }
 
-// STEP 2 → set real password
 async function setPassword() {
   const password = document.getElementById("password").value;
+  if (!password) { alert("Please set a password"); return; }
 
-  const { data, error } = await supabase.auth.updateUser({
-    password: password
-  });
+  try {
+    const formData = new FormData();
+    formData.append("username", window._signupUsername);
+    formData.append("password", password);
 
-  if (error) {
-    alert(error.message);
-  } else {
-    alert("Signup complete ✅");
-
+    await apiCall("/api/auth/register", { method: "POST", body: formData });
+    alert("Signup successful! Please login.");
     window.location.href = "login.html";
+  } catch (err) {
+    alert(err.message);
   }
 }
 </script>

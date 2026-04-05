@@ -1,66 +1,349 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>ATS Result</title>
+<meta charset="UTF-8">
+<title>Detailed Analysis Report - ATS AI</title>
 
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+<style>
+body {
+  font-family: 'Inter', sans-serif;
+  background: #0b0b0c;
+  color: white;
+  margin: 0;
+  overflow-x: hidden;
+}
+
+/* 🔥 THE ORIGINAL BLUE GRID UI 🔥 */
+.hero-grid {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  z-index: -1;
+}
+.hero-grid::before {
+  content: "";
+  position: absolute;
+  width: 200%;
+  height: 200%;
+  top: -50%;
+  left: -50%;
+  background-image:
+    linear-gradient(rgba(59,130,246,0.35) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(59,130,246,0.35) 1px, transparent 1px);
+  background-size: 30px 30px;
+  filter: drop-shadow(0 0 10px rgba(59,130,246,0.5));
+}
+
+/* Glass Navbar */
+nav.custom-nav {
+  position: fixed;
+  top: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 90%;
+  max-width: 1000px;
+  z-index: 100;
+  background: rgba(255,255,255,0.05);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 16px;
+  padding: 16px 32px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.report-content {
+  max-width: 1000px;
+  margin: 160px auto 100px;
+  padding: 0 20px;
+}
+
+.card {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.08);
+  backdrop-filter: blur(12px);
+  border-radius: 20px;
+  padding: 40px;
+  margin-bottom: 30px;
+}
+
+.label-blue {
+  color: #3b82f6;
+  text-transform: uppercase;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  font-size: 0.8rem;
+  margin-bottom: 12px;
+  display: block;
+}
+
+.score-hero {
+  font-size: 8rem;
+  font-weight: 800;
+  color: white;
+  line-height: 1;
+}
+
+.desc-text {
+  color: #9ca3af;
+  line-height: 1.8;
+  font-size: 1.1rem;
+}
+
+.btn {
+  background: white;
+  color: black;
+  padding: 14px 32px;
+  border-radius: 12px;
+  font-weight: 600;
+  transition: 0.25s;
+  cursor: pointer;
+  display: inline-block;
+}
+.btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 40px rgba(59,130,246,0.3);
+}
+.btn-outline {
+  background: rgba(255,255,255,0.06);
+  color: white;
+  border: 1px solid rgba(255,255,255,0.1);
+}
+
+.tag-cloud { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 15px; }
+.tag {
+  padding: 6px 12px;
+  background: rgba(59,130,246,0.1);
+  border: 1px solid rgba(59,130,246,0.2);
+  border-radius: 20px;
+  font-size: 0.8rem;
+  color: #60a5fa;
+}
+.tag-red {
+  background: rgba(239,68,68,0.1);
+  border-color: rgba(239,68,68,0.2);
+  color: #f87171;
+}
+
+/* TERMINAL VIEW FOR RAW LOGS */
+.terminal-view {
+  background: #111111;
+  border: 1px solid #333;
+  border-radius: 12px;
+  padding: 24px;
+  font-family: 'JetBrains Mono', 'Courier New', monospace;
+  font-size: 0.85rem;
+  color: #d1d5db;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  max-height: 500px;
+  overflow-y: auto;
+}
+.terminal-view::-webkit-scrollbar { width: 8px; }
+.terminal-view::-webkit-scrollbar-track { background: #111; }
+.terminal-view::-webkit-scrollbar-thumb { background: #333; border-radius: 4px; }
+
+
+@media print {
+  .hero-grid, .custom-nav, .no-print { display: none !important; }
+  .report-content { margin-top: 0; }
+}
+</style>
 </head>
 
-<body class="bg-black text-white min-h-screen flex flex-col items-center justify-center">
+<body>
 
-  <h1 class="text-4xl font-bold mb-6">ATS Analysis Result</h1>
+<div class="hero-grid"></div>
 
-  <!-- Score -->
-  <p id="scoreText" class="text-2xl text-green-400 mb-10"></p>
+<!-- NAVBAR (ALL PAGES EXCEPT HOME) -->
+<nav class="custom-nav">
+  <h1 class="text-md font-semibold">पाशिळकरांचा वाघ Resume Screening</h1>
+  <div class="flex space-x-8 text-sm font-medium">
+    <a href="index.html" class="text-gray-400 hover:text-white transition">Home</a>
+    <button onclick="logout()" class="text-gray-400 hover:text-white transition">Logout</button>
+  </div>
+</nav>
 
-  <!-- Graph -->
-  <div class="w-full max-w-2xl bg-gray-900 p-6 rounded-2xl">
-    <canvas id="chart"></canvas>
+<div class="report-content">
+  
+  <!-- 🔥 DEEP VERBAL REPORT SECTION 🔥 -->
+  <div class="card">
+    <span class="label-blue">Deep AI Verbal Analysis</span>
+    <div class="flex flex-col md:flex-row items-baseline gap-8 mb-8 mt-4">
+        <h2 id="finalScore" class="score-hero">0%</h2>
+        <div>
+            <p id="inferredRole" class="text-2xl font-bold text-blue-400 uppercase tracking-widest">Web Developer</p>
+            <p class="desc-text mt-2">Overall Candidate Assessment Score</p>
+        </div>
+    </div>
+    <p class="desc-text text-xl border-l-4 border-blue-500 pl-6 italic">
+        "Our deep semantic analysis reveals that your resume shows <span id="summaryWord" class="text-white font-bold">---</span> alignment with the technical standards of your target role."
+    </p>
   </div>
 
-  <!-- Back Button -->
-  <a href="index.html" class="mt-8 bg-white text-black px-6 py-2 rounded-lg">
-    Analyze Another Resume
-  </a>
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+      <!-- SKILL MATCHER -->
+      <div class="card p-8 !mb-0">
+          <span class="label-blue">JD Matcher Profile</span>
+          <div id="jdScore" class="text-4xl font-bold mb-4 text-green-400">0%</div>
+          <p class="desc-text text-sm">
+            This metric identifies the direct synchronization between core job competencies and your documented history. 
+            A high match indicates better probability of passing automated screening.
+          </p>
+          <div class="tag-cloud" id="matchedTags"></div>
+      </div>
 
-  <!-- JS -->
-  <script>
-    // Get data from URL
-    const params = new URLSearchParams(window.location.search);
+      <!-- SKILL GAPS -->
+      <div class="card p-8 bg-red-500/5 border-red-500/20 !mb-0">
+          <span class="label-blue text-red-400">Critical Skill Identify Gaps</span>
+          <p class="desc-text text-sm mb-6">
+            The following identifiers were not found in your profile and are considered essential for visibility.
+          </p>
+          <div class="tag-cloud" id="missingTags"></div>
+      </div>
+  </div>
 
-    const score = params.get("score");
-    const skills = params.get("skills");
-    const experience = params.get("experience");
-    const education = params.get("education");
-    const projects = params.get("projects");
+  <div class="card space-y-12 mb-8">
+      <h3 class="text-3xl font-bold border-b border-white/5 pb-6">Professional Breakdown</h3>
 
-    document.getElementById("scoreText").textContent =
-      "ATS Score: " + score + "%";
+      <div>
+          <span class="label-blue">Educational Credentials</span>
+          <h4 class="text-xl font-bold mb-2">Quality Grade: <span id="eduGrade" class="text-blue-400">---</span></h4>
+          <p class="desc-text" id="eduVerbal">Analysis indicates your academic milestones provide solid foundational relevance to this track.</p>
+      </div>
 
-    // Create graph
-    const ctx = document.getElementById("chart");
+      <div>
+          <span class="label-blue">Work History Impact</span>
+          <h4 class="text-xl font-bold mb-2">Quality Grade: <span id="expGrade" class="text-blue-400">---</span></h4>
+          <p class="desc-text" id="expVerbal">Your professional progression demonstrates impactful contributions and increasing responsibilities in past roles.</p>
+      </div>
 
-    new Chart(ctx, {
-      type: "bar",
-      data: {
-        labels: ["Skills", "Experience", "Education", "Projects"],
-        datasets: [{
-          label: "ATS Breakdown",
-          data: [skills, experience, education, projects],
-        }]
-      },
-      options: {
-        scales: {
-          y: {
-            beginAtZero: true,
-            max: 100
-          }
-        }
-      }
-    });
-  </script>
+      <div>
+          <span class="label-blue">Technical Project Intensity</span>
+          <h4 class="text-xl font-bold mb-2">Quality Grade: <span id="projGrade" class="text-blue-400">---</span></h4>
+          <p class="desc-text" id="projVerbal">Projects show practical implementation but could benefit from more detailed quantifiable outcomes.</p>
+      </div>
+  </div>
+
+  <div class="card bg-blue-500/5 border-blue-500/10 mb-8">
+      <h4 class="text-xl font-bold mb-6 flex items-center gap-3">
+          <span class="w-2 h-2 bg-blue-500 rounded-full"></span> AI Strategy & Strengths/Recommendations
+      </h4>
+      <ul id="strategyList" class="desc-text list-disc pl-6 space-y-4">
+          <!-- Injected -->
+      </ul>
+  </div>
+
+  <!-- 🔥 RAW TERMINAL AI OUTPUT AS REQUESTED 🔥 -->
+  <div class="card p-0 overflow-hidden border-gray-800">
+      <div class="bg-black/50 px-6 py-4 border-b border-gray-800 flex items-center gap-3">
+          <div class="w-3 h-3 rounded-full bg-red-500"></div>
+          <div class="w-3 h-3 rounded-full bg-yellow-500"></div>
+          <div class="w-3 h-3 rounded-full bg-green-500"></div>
+          <span class="text-gray-400 text-sm ml-2 font-mono">deepcv_engine_logs.txt</span>
+      </div>
+      <div class="p-6">
+          <span class="label-blue mb-4">Description of the Resume (System Output Logs)</span>
+          <div id="terminalOutput" class="terminal-view">
+              Loading backend data streams...
+          </div>
+      </div>
+  </div>
+
+  <!-- OPTIONS -->
+  <div class="flex flex-wrap gap-6 mt-12 mb-20 no-print">
+      <button onclick="window.print()" class="btn">Download Full Report</button>
+      <a href="upload.html" class="btn btn-outline">Analyze Another Resume</a>
+  </div>
+
+</div>
+
+<script>
+    const data = JSON.parse(localStorage.getItem("last_result"));
+    if (!data) { window.location.href = "upload.html"; }
+
+    // Core Metrics
+    const s = Math.round(data.ats_score);
+    document.getElementById("finalScore").innerText = s + "%";
+    document.getElementById("inferredRole").innerText = data.inferred_role || "Professional";
+    document.getElementById("jdScore").innerText = Math.round(data.jd_match) + "%";
+
+    const summ = s > 80 ? "EXCEPTIONAL" : (s > 60 ? "STRONG" : "MODERATE");
+    document.getElementById("summaryWord").innerText = summ;
+
+    // Grants
+    const getWords = (sts) => {
+        if (sts === 'Excellent') return "The AI identifies an exceptional level of technical depth and perfect alignment with modern standards.";
+        if (sts === 'Good') return "The profile demonstrates solid grounding with minor areas for optimization in keyword density.";
+        if (sts === 'Fair') return "Structural alignment is present but impact markers for high-level screening are missing.";
+        return "Significant structural and content gaps were identified that may hinder automated screening success.";
+    }
+
+    document.getElementById("eduGrade").innerText = data.section_quality.education;
+    document.getElementById("eduVerbal").innerText = getWords(data.section_quality.education);
+    
+    document.getElementById("expGrade").innerText = data.section_quality.experience;
+    document.getElementById("expVerbal").innerText = getWords(data.section_quality.experience);
+    
+    document.getElementById("projGrade").innerText = data.section_quality.projects;
+    document.getElementById("projVerbal").innerText = getWords(data.section_quality.projects);
+
+    // Tags
+    const inject = (id, list, color="") => {
+        const div = document.getElementById(id);
+        if (!list || list.length === 0) { div.innerHTML = "<p class='text-gray-600 text-sm italic'>None identified.</p>"; return; }
+        div.innerHTML = list.map(t => `<span class="tag ${color}">${t}</span>`).join("");
+    }
+    inject("matchedTags", data.matched_skills);
+    inject("missingTags", data.missing_skills, "tag-red");
+
+    // Recs
+    const list = document.getElementById("strategyList");
+    if (data.recommendations && data.recommendations.length) {
+        list.innerHTML = data.recommendations.map(r => `<li>${r}</li>`).join("");
+    } else {
+        list.innerHTML = "<li>Maintain current structural detail and density.</li>";
+    }
+
+    // GENERATE THE RAW TERMINAL DUMP
+    if (data.raw_semantic && data.raw_sections) {
+        // Reconstruct the Python-style dictionary print block you requested
+        // Example: {'role': 'web_developer', 'score': np.float32(0.32), 'matched': [...]}
+        
+        let semanticMatches = data.raw_semantic.matched.map(m => `('${m[0]}', np.float32(${m[1].toFixed(2)}))`).join(', ');
+        
+        let semanticObjStr = `{'role': '${data.raw_semantic.role}', 'score': np.float32(${data.raw_semantic.score.toFixed(2)}), 'matched': [${semanticMatches}], 'missing': [${data.raw_semantic.missing.map(x=> `'${x}'`).join(', ')}]}`;
+
+        let terminalStr = `===== SEMANTIC MATCH RESULT =====\n`;
+        terminalStr += `${semanticObjStr}\n\n`;
+        terminalStr += `===== FINAL SCORE =====\n`;
+        terminalStr += `${data.raw_score.toFixed(2)}\n\n`;
+        terminalStr += `===== SECTIONS =====\n\n`;
+        
+        // Loop over parsed sections
+        const sectionsKeys = ["education", "experience", "skills", "projects", "summary", "other"];
+        sectionsKeys.forEach(key => {
+            if (data.raw_sections[key]) {
+                terminalStr += `--- ${key.toUpperCase()} ---\n`;
+                terminalStr += `${data.raw_sections[key]}\n\n`;
+            }
+        });
+
+        document.getElementById("terminalOutput").innerText = terminalStr;
+    } else {
+        document.getElementById("terminalOutput").innerText = "Raw terminal data not found. Please rescan resume to capture new backend logs.";
+    }
+
+    function logout() {
+        localStorage.removeItem("user_id");
+        window.location.href = "login.html";
+    }
+</script>
 
 </body>
 </html>
