@@ -11,6 +11,7 @@ from fastapi.responses import RedirectResponse, JSONResponse
 
 from config import load_env_file
 from database.db import init_db, insert_result, login_user, register_user, check_user_exists
+from scoring.report_narrative import build_analysis_narrative
 
 # Preload heavy modules for "production-ready" startup
 # In a real production app, these would be initialized/cached
@@ -115,7 +116,7 @@ def read_root():
     return {
         "status": "online",
         "service": "DeepCV Analyzer API",
-        "frontend": "http://127.0.0.1:3000/landing.html",
+        "frontend": "http://127.0.0.1:4100/landing.html",
         "endpoints": ["/api/health", "/api/auth/login", "/api/auth/register", "/api/analyze"]
     }
 
@@ -198,6 +199,19 @@ async def analyze_resume(
         }
         insert_result(user_id, db_data)
 
+        role_display = role.replace("_", " ").title()
+        narratives = build_analysis_narrative(
+            role_display=role_display,
+            jd_text=jd_text,
+            ats_score_pct=float(db_data["final_score"]),
+            jd_match_pct=float(db_data["jd_score"]),
+            final_score_raw=float(final_score),
+            semantic_result=semantic_result,
+            section_quality=section_quality,
+            gap_result=gap_result,
+            sections=sections,
+        )
+
         return {
             "ats_score": round(db_data["final_score"], 2),
             "jd_match": round(db_data["jd_score"], 2),
@@ -205,11 +219,11 @@ async def analyze_resume(
             "matched_skills": [m[0] for m in semantic_result["matched"]],
             "missing_skills": semantic_result["missing"],
             "recommendations": gap_result["recommendations"],
-            "inferred_role": role.replace("_", " ").title(),
-            # Raw Data for Terminal View
+            "inferred_role": role_display,
+            "narratives": narratives,
             "raw_sections": sections,
             "raw_semantic": semantic_result,
-            "raw_score": float(final_score)
+            "raw_score": float(final_score),
         }
     except Exception as e:
         logger.error(f"Analysis failed: {e}")

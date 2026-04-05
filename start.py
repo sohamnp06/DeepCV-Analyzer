@@ -35,25 +35,25 @@ if __name__ == "__main__":
     )
 
     # 2. Start Frontend
-    print("[2/2] Launching Frontend on port 3000...")
+    print("[2/2] Launching Frontend on port 4100...")
     frontend = subprocess.Popen(
-        [sys.executable, "-m", "http.server", "3000"],
+        [sys.executable, "server.py", "4100"],
         cwd=FRONTEND,
         stdout=subprocess.DEVNULL,
         stderr=subprocess.STDOUT
     )
 
     # Wait for things to be ready
-    if wait_for_port(8080, host='127.0.0.1') and wait_for_port(3000, host='127.0.0.1'):
+    if wait_for_port(8080, host='127.0.0.1') and wait_for_port(4100, host='127.0.0.1'):
         print("\n" + " ✅ READY! Servers are running. " .center(60, "-"))
-        print(f" 🌐 Frontend : http://127.0.0.1:3000/landing.html")
+        print(f" 🌐 Frontend : http://127.0.0.1:4100/landing.html")
         print(f" ⚡ Backend  : http://127.0.0.1:8080")
         print("-" * 60)
         print("\n ⚠️  IMPORTANT: KEEP THIS TERMINAL OPEN while using the app.")
         print("    If you close this window, the backend will stop working.")
     else:
         print("\n ⚠️  Warning: Backend or Frontend took too long to start.")
-        print(" Check if another process is using port 8080 or 3000.")
+        print(" Check if another process is using port 8080 or 4100.")
 
     print("\n [Press Ctrl+C to shutdown both servers]")
 

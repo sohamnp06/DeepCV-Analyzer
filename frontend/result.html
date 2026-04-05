@@ -187,72 +187,63 @@ nav.custom-nav {
   </div>
 
   <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
-      <!-- SKILL MATCHER -->
       <div class="card p-8 !mb-0">
-          <span class="label-blue">JD Matcher Profile</span>
-          <div id="jdScore" class="text-4xl font-bold mb-4 text-green-400">0%</div>
-          <p class="desc-text text-sm">
-            This metric identifies the direct synchronization between core job competencies and your documented history. 
-            A high match indicates better probability of passing automated screening.
-          </p>
-          <div class="tag-cloud" id="matchedTags"></div>
+          <span class="label-blue">ATS semantic matcher</span>
+          <div id="atsNarrative" class="desc-text text-sm mt-4"></div>
+          <div class="tag-cloud mt-6" id="matchedTags"></div>
       </div>
-
-      <!-- SKILL GAPS -->
-      <div class="card p-8 bg-red-500/5 border-red-500/20 !mb-0">
-          <span class="label-blue text-red-400">Critical Skill Identify Gaps</span>
-          <p class="desc-text text-sm mb-6">
-            The following identifiers were not found in your profile and are considered essential for visibility.
-          </p>
-          <div class="tag-cloud" id="missingTags"></div>
+      <div class="card p-8 !mb-0">
+          <span class="label-blue">JD matcher</span>
+          <div id="jdScore" class="text-4xl font-bold mb-4 text-green-400">0%</div>
+          <div id="jdNarrative" class="desc-text text-sm"></div>
       </div>
   </div>
 
+  <div class="card mb-8">
+      <span class="label-blue">Composite scorer</span>
+      <div id="compositeNarrative" class="desc-text mt-4"></div>
+  </div>
+
+  <div class="card mb-8 bg-red-500/5 border-red-500/20">
+      <span class="label-blue text-red-400">Skill gap &amp; category analysis</span>
+      <div class="tag-cloud my-6" id="missingTags"></div>
+      <div id="skillGapNarrative" class="desc-text"></div>
+  </div>
+
   <div class="card space-y-12 mb-8">
-      <h3 class="text-3xl font-bold border-b border-white/5 pb-6">Professional Breakdown</h3>
+      <h3 class="text-3xl font-bold border-b border-white/5 pb-6">Section strength (education, experience, projects)</h3>
 
       <div>
-          <span class="label-blue">Educational Credentials</span>
-          <h4 class="text-xl font-bold mb-2">Quality Grade: <span id="eduGrade" class="text-blue-400">---</span></h4>
-          <p class="desc-text" id="eduVerbal">Analysis indicates your academic milestones provide solid foundational relevance to this track.</p>
+          <span class="label-blue">Education</span>
+          <h4 class="text-xl font-bold mb-2">Strength: <span id="eduGrade" class="text-blue-400">---</span></h4>
+          <div class="desc-text" id="eduVerbal"></div>
       </div>
 
       <div>
-          <span class="label-blue">Work History Impact</span>
-          <h4 class="text-xl font-bold mb-2">Quality Grade: <span id="expGrade" class="text-blue-400">---</span></h4>
-          <p class="desc-text" id="expVerbal">Your professional progression demonstrates impactful contributions and increasing responsibilities in past roles.</p>
+          <span class="label-blue">Experience</span>
+          <h4 class="text-xl font-bold mb-2">Strength: <span id="expGrade" class="text-blue-400">---</span></h4>
+          <div class="desc-text" id="expVerbal"></div>
       </div>
 
       <div>
-          <span class="label-blue">Technical Project Intensity</span>
-          <h4 class="text-xl font-bold mb-2">Quality Grade: <span id="projGrade" class="text-blue-400">---</span></h4>
-          <p class="desc-text" id="projVerbal">Projects show practical implementation but could benefit from more detailed quantifiable outcomes.</p>
+          <span class="label-blue">Projects</span>
+          <h4 class="text-xl font-bold mb-2">Strength: <span id="projGrade" class="text-blue-400">---</span></h4>
+          <div class="desc-text" id="projVerbal"></div>
       </div>
   </div>
 
   <div class="card bg-blue-500/5 border-blue-500/10 mb-8">
       <h4 class="text-xl font-bold mb-6 flex items-center gap-3">
-          <span class="w-2 h-2 bg-blue-500 rounded-full"></span> AI Strategy & Strengths/Recommendations
+          <span class="w-2 h-2 bg-blue-500 rounded-full"></span> Recommendations
       </h4>
-      <ul id="strategyList" class="desc-text list-disc pl-6 space-y-4">
-          <!-- Injected -->
-      </ul>
+      <div id="recommendationsNarrative" class="desc-text"></div>
+      <ul id="strategyList" class="desc-text list-disc pl-6 space-y-4 hidden"></ul>
   </div>
 
-  <!-- 🔥 RAW TERMINAL AI OUTPUT AS REQUESTED 🔥 -->
-  <div class="card p-0 overflow-hidden border-gray-800">
-      <div class="bg-black/50 px-6 py-4 border-b border-gray-800 flex items-center gap-3">
-          <div class="w-3 h-3 rounded-full bg-red-500"></div>
-          <div class="w-3 h-3 rounded-full bg-yellow-500"></div>
-          <div class="w-3 h-3 rounded-full bg-green-500"></div>
-          <span class="text-gray-400 text-sm ml-2 font-mono">deepcv_engine_logs.txt</span>
-      </div>
-      <div class="p-6">
-          <span class="label-blue mb-4">Description of the Resume (System Output Logs)</span>
-          <div id="terminalOutput" class="terminal-view">
-              Loading backend data streams...
-          </div>
-      </div>
+  <div class="card mb-8">
+      <span class="label-blue">Full narrative report</span>
+      <p class="desc-text text-sm text-gray-500 mb-4">Generated from scoring modules (semantic matcher, JD matcher, composite scorer, skill gap, section scorer).</p>
+      <div id="fullReportText" class="desc-text leading-relaxed space-y-4"></div>
   </div>
 
   <!-- OPTIONS -->
@@ -267,7 +258,19 @@ nav.custom-nav {
     const data = JSON.parse(localStorage.getItem("last_result"));
     if (!data) { window.location.href = "upload.html"; }
 
-    // Core Metrics
+    function formatInlineBold(text) {
+        if (!text) return "";
+        return String(text).replace(/\*\*(.+?)\*\*/g, "<strong class=\"text-white\">$1</strong>");
+    }
+
+    function paragraphsHtml(text) {
+        if (!text) return "<p class=\"text-gray-500 text-sm\">No description available.</p>";
+        return text.split(/\n\n+/).map(function (block) {
+            const line = block.replace(/\n/g, " ").trim();
+            return "<p class=\"mb-3 last:mb-0\">" + formatInlineBold(line) + "</p>";
+        }).join("");
+    }
+
     const s = Math.round(data.ats_score);
     document.getElementById("finalScore").innerText = s + "%";
     document.getElementById("inferredRole").innerText = data.inferred_role || "Professional";
@@ -276,67 +279,61 @@ nav.custom-nav {
     const summ = s > 80 ? "EXCEPTIONAL" : (s > 60 ? "STRONG" : "MODERATE");
     document.getElementById("summaryWord").innerText = summ;
 
-    // Grants
-    const getWords = (sts) => {
-        if (sts === 'Excellent') return "The AI identifies an exceptional level of technical depth and perfect alignment with modern standards.";
-        if (sts === 'Good') return "The profile demonstrates solid grounding with minor areas for optimization in keyword density.";
-        if (sts === 'Fair') return "Structural alignment is present but impact markers for high-level screening are missing.";
-        return "Significant structural and content gaps were identified that may hinder automated screening success.";
+    const n = data.narratives;
+
+    if (n) {
+        const overviewP = document.querySelector(".desc-text.text-xl.border-l-4");
+        if (overviewP) {
+            overviewP.innerHTML = formatInlineBold(n.overview || "") +
+                " <span class=\"text-white font-bold\">" + summ + "</span> alignment with the inferred role profile.";
+        }
+        document.getElementById("atsNarrative").innerHTML = paragraphsHtml(n.ats_matcher);
+        document.getElementById("jdNarrative").innerHTML = paragraphsHtml(n.jd_matcher);
+        document.getElementById("compositeNarrative").innerHTML = paragraphsHtml(n.composite_scorer);
+        document.getElementById("skillGapNarrative").innerHTML = paragraphsHtml(n.skill_gap);
+        document.getElementById("eduVerbal").innerHTML = paragraphsHtml(n.education);
+        document.getElementById("expVerbal").innerHTML = paragraphsHtml(n.experience);
+        document.getElementById("projVerbal").innerHTML = paragraphsHtml(n.projects);
+        document.getElementById("recommendationsNarrative").innerHTML = paragraphsHtml(n.recommendations_paragraph);
+        document.getElementById("fullReportText").innerHTML = paragraphsHtml(n.full_report_text);
+        document.getElementById("strategyList").classList.add("hidden");
+    } else {
+        document.getElementById("atsNarrative").textContent = "Run analysis again to load narrative descriptions from the server.";
+        document.getElementById("strategyList").classList.remove("hidden");
+        const fallback = function (sts) {
+            if (sts === "Strong") return "This section reads with solid depth and keyword coverage for ATS.";
+            if (sts === "Moderate") return "This section is present but would benefit from more metrics and role keywords.";
+            return "This section is thin; expand with concrete outcomes and keywords.";
+        };
+        document.getElementById("eduVerbal").textContent = fallback(data.section_quality.education);
+        document.getElementById("expVerbal").textContent = fallback(data.section_quality.experience);
+        document.getElementById("projVerbal").textContent = fallback(data.section_quality.projects);
     }
 
     document.getElementById("eduGrade").innerText = data.section_quality.education;
-    document.getElementById("eduVerbal").innerText = getWords(data.section_quality.education);
-    
     document.getElementById("expGrade").innerText = data.section_quality.experience;
-    document.getElementById("expVerbal").innerText = getWords(data.section_quality.experience);
-    
     document.getElementById("projGrade").innerText = data.section_quality.projects;
-    document.getElementById("projVerbal").innerText = getWords(data.section_quality.projects);
 
-    // Tags
-    const inject = (id, list, color="") => {
+    const inject = (id, list, color) => {
         const div = document.getElementById(id);
-        if (!list || list.length === 0) { div.innerHTML = "<p class='text-gray-600 text-sm italic'>None identified.</p>"; return; }
-        div.innerHTML = list.map(t => `<span class="tag ${color}">${t}</span>`).join("");
-    }
+        if (!list || list.length === 0) {
+            div.innerHTML = "<p class=\"text-gray-600 text-sm italic\">None identified.</p>";
+            return;
+        }
+        div.innerHTML = list.map(function (t) {
+            return "<span class=\"tag " + (color || "") + "\">" + t + "</span>";
+        }).join("");
+    };
     inject("matchedTags", data.matched_skills);
     inject("missingTags", data.missing_skills, "tag-red");
 
-    // Recs
     const list = document.getElementById("strategyList");
-    if (data.recommendations && data.recommendations.length) {
-        list.innerHTML = data.recommendations.map(r => `<li>${r}</li>`).join("");
-    } else {
-        list.innerHTML = "<li>Maintain current structural detail and density.</li>";
-    }
-
-    // GENERATE THE RAW TERMINAL DUMP
-    if (data.raw_semantic && data.raw_sections) {
-        // Reconstruct the Python-style dictionary print block you requested
-        // Example: {'role': 'web_developer', 'score': np.float32(0.32), 'matched': [...]}
-        
-        let semanticMatches = data.raw_semantic.matched.map(m => `('${m[0]}', np.float32(${m[1].toFixed(2)}))`).join(', ');
-        
-        let semanticObjStr = `{'role': '${data.raw_semantic.role}', 'score': np.float32(${data.raw_semantic.score.toFixed(2)}), 'matched': [${semanticMatches}], 'missing': [${data.raw_semantic.missing.map(x=> `'${x}'`).join(', ')}]}`;
-
-        let terminalStr = `===== SEMANTIC MATCH RESULT =====\n`;
-        terminalStr += `${semanticObjStr}\n\n`;
-        terminalStr += `===== FINAL SCORE =====\n`;
-        terminalStr += `${data.raw_score.toFixed(2)}\n\n`;
-        terminalStr += `===== SECTIONS =====\n\n`;
-        
-        // Loop over parsed sections
-        const sectionsKeys = ["education", "experience", "skills", "projects", "summary", "other"];
-        sectionsKeys.forEach(key => {
-            if (data.raw_sections[key]) {
-                terminalStr += `--- ${key.toUpperCase()} ---\n`;
-                terminalStr += `${data.raw_sections[key]}\n\n`;
-            }
-        });
-
-        document.getElementById("terminalOutput").innerText = terminalStr;
-    } else {
-        document.getElementById("terminalOutput").innerText = "Raw terminal data not found. Please rescan resume to capture new backend logs.";
+    if (!n) {
+        if (data.recommendations && data.recommendations.length) {
+            list.innerHTML = data.recommendations.map(function (r) { return "<li>" + r + "</li>"; }).join("");
+        } else {
+            list.innerHTML = "<li>Maintain clear metrics and role keywords across sections.</li>";
+        }
     }
 
     function logout() {
