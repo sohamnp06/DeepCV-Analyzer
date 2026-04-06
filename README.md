@@ -10,31 +10,30 @@ By leveraging the **Hugging Face Inference API**, this version is highly optimiz
 
 Unlike traditional ATS (Applicant Tracking Systems) that rely on primitive keyword matching, **DeepCV-Analyzer** introduces a higher level of intelligence:
 
-- **🧠 Cloud-Powered Semantic Understanding**: Uses the `all-MiniLM-L6-v2` transformer model via the **Hugging Face Inference Router** to understand the *intent* and *context* of your experience. It recognizes that "Building Web APIs" and "Backend Development" are semantically related, even if the exact keywords don't match.
-- **🔍 Domain-Specific Skill Gap Analysis**: Our engine doesn't just list missing words; it categorizes your skills into **Programming, Frontend, Backend, Databases, Core CS, Cloud, and Data Science**. It identifies which *ecosystems* you need to strengthen.
-- **⚡ Deployment Optimized**: By moving from heavy local `sentence-transformers` dependencies (~2.8GB installation) to a lightweight `requests`-based API client, the backend now starts instantly and fits easily within free-tier resource limits.
-- **📝 Narrative Intelligence**: Features a structured **Textual Narrative Report**. It tells a professional story about your profile—strengths, weaknesses, and concrete steps for improvement—with clear "Impact" context for every recommendation.
-- **🔒 Integrated Security**: Implements SHA-256 password hashing and PostgreSQL persistence, with all sensitive keys managed securely via environment variables.
+- **🧠 Cloud-Powered Semantic Understanding**: Uses the `all-MiniLM-L6-v2` transformer model via the **Hugging Face Inference Router** to understand context. It recognizes that "Building Web APIs" and "Backend Development" are semantically related.
+- **🔍 Domain-Specific Skill Gap Analysis**: Categorizes your skills into **Programming, Frontend, Backend, Databases, Core CS, Cloud, and Data Science**.
+- **⚡ Deployment Optimized**: By moving from heavy local `sentence-transformers` dependencies (~2.8GB installation) to a lightweight API client, the project fits easily within Render's free-tier limits.
+- **📝 Narrative Intelligence**: Features a structured **Textual Narrative Report** that tells a professional story about your profile—strengths, weaknesses, and concrete steps for improvement.
+- **🔒 Integrated Security**: SHA-256 hashing and PostgreSQL persistence with environment variable management.
 
 ---
 
 ## 🌟 Core Features
 
-- **AI-Powered Resume Scoring**: Calculates a multi-dimensional score based on JD matching, experience depth, and educational background.
-- **Automated Section Classification**: Uses heuristic-based NLP to split resumes into Education, Experience, Skills, and Projects for isolated evaluation.
-- **Persistent Analysis History**: Tracks and stores every scan, allowing users to monitor their profile's evolution over time.
-- **Unified Command Center**: A single `start.py` script orchestrates the entire multi-port environment (Backend on 8080, Frontend on 4100).
-- **Interactive UI**: A modern, dark-themed "Blue-Grid" aesthetic designed for a premium user experience.
+- **AI-Powered Resume Scoring**: Multi-dimensional scoring based on JD matching, experience depth, and educational background.
+- **Unified Full-Stack Port**: The backend now serves the entire frontend UI, allowing you to run the complete stack on a single port.
+- **Persistent Analysis History**: Tracks every scan for profile evolution monitoring.
+- **Interactive UI**: A modern, dark-themed "Blue-Grid" aesthetic.
 
 ---
 
 ## 🛠️ Technology Stack
 
-- **Backend**: FastAPI (Async Python)
-- **Frontend**: Vanilla JavaScript + HTML5/CSS3 (Decoupled Client-Server Architecture)
-- **AI/ML**: Hugging Face Inference API (`all-MiniLM-L6-v2` / `bge-small-en-v1.5`), `scikit-learn`
-- **Database**: PostgreSQL (Relational Persistence)
-- **PDF Core**: PyMuPDF (`fitz`) for high-fidelity text extraction
+- **Backend**: FastAPI (Python)
+- **Frontend**: Vanilla JavaScript (Served via FastAPI StaticFiles)
+- **AI/ML**: Hugging Face Inference API (`all-MiniLM-L6-v2` / `bge-small-en-v1.5`)
+- **Database**: PostgreSQL
+- **PDF Core**: PyMuPDF (`fitz`) 
 
 ---
 
@@ -56,23 +55,23 @@ HUGGINGFACE_API_KEY=your_huggingface_token_here
 
 ### 3. Launch the System
 ```bash
-python start.py
+python api_server.py
 ```
-Visit the **Frontend** at: [http://127.0.0.1:4100/landing.html](http://127.0.0.1:4100/landing.html)
+Visit the **Full Stack App** at: [http://127.0.0.1:8080/landing.html](http://127.0.0.1:8080/landing.html)
 
 ---
 
-## 📂 Project Architecture
+## 📂 Render Deployment (Web Service)
 
-- **`api_server.py`**: The heart of the system—handles uploads, triggers AI analysis, and manages data persistence.
-- **`scoring/`**: Contains matching algorithms, the `skill_gap` engine, and the structured narrative report builder.
-- **`models/embedding_model.py`**: Handles API communication with Hugging Face with robust failure-handling and multi-model fallbacks.
-- **`frontend/`**: A fully decoupled web client with a custom high-performance dev server.
-- **`database/db.py`**: Secure logic for user authentication (SHA-256) and results persistence.
+When deploying to **Render**, use the following settings:
+
+- **Runtime**: `Python`
+- **Build Command**: `pip install -r requirements.txt`
+- **Start Command**: `uvicorn api_server:app --host 0.0.0.0 --port $PORT`
 
 ---
 
 ## ⚠️ Important Notes
-- **API Access**: You must provide a valid `HUGGINGFACE_API_KEY` in your `.env` for the semantic matcher to function.
-- **Lightweight Footprint**: This project no longer requires local PyTorch or large transformer models, saving ~3GB of disk space.
-- **Postgres**: Ensure your PostgreSQL service is active before launching `start.py`.
+- **API Access**: You must provide a valid `HUGGINGFACE_API_KEY`.
+- **Postgres**: Ensure your PostgreSQL service is active (or set `DATABASE_URL` in Render).
+- **Frontend**: The `frontend/` folder is automatically served as static files at root `/`.

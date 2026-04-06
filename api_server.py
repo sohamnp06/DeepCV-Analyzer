@@ -8,6 +8,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI, File, Form, HTTPException, UploadFile, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from fastapi.staticfiles import StaticFiles
 
 from config import load_env_file
 from database.db import init_db, insert_result, login_user, register_user, check_user_exists
@@ -224,6 +225,10 @@ async def analyze_resume(file: UploadFile = File(...), user_id: int = Form(...))
         raise HTTPException(status_code=500, detail="Internal analysis error")
     finally:
         if os.path.exists(temp_path): os.remove(temp_path)
+# Final: Mount Frontend static files
+# This allows the entire UI (index, login, result, etc.) to be served on the SAME PORT as the API
+app.mount("/", StaticFiles(directory="frontend", html=True), name="frontend")
+
 
 if __name__ == "__main__":
     import uvicorn
