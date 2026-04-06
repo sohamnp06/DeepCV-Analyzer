@@ -11,7 +11,7 @@ from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 
 from config import load_env_file
-from database.db import init_db, insert_result, login_user, register_user, check_user_exists
+from database.db import init_db, insert_result, login_user, register_user, check_user_exists, get_db_connection
 from scoring.report_narrative import build_analysis_narrative
 
 # We will dynamically import these to allow the server to open the port FIRST
@@ -122,6 +122,21 @@ def infer_role(resume_text):
         "product_manager": sum(text.count(k) for k in ["agile", "jira", "roadmap"])
     }
     return max(scores, key=scores.get)
+
+@app.get("/db-test")
+async def db_test():
+    """Returns DB connectivity check."""
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute("SELECT 1")
+        cursor.fetchone()
+        cursor.close()
+        conn.close()
+        return {"status": "ok", "message": "Database connection successful"}
+    except Exception as e:
+        logger.error(f"DB Test failed: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 @app.get("/api/health")
 async def health():
