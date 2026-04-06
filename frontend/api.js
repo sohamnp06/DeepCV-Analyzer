@@ -5,9 +5,18 @@ function getBaseUrl() {
            : "http://127.0.0.1:8080";
 }
 
-async function apiCall(endpoint, options) {
+async function apiCall(endpoint, options = {}) {
     const base = getBaseUrl();
     const url = base + endpoint;
+
+    // Default headers
+    if (!options.headers) options.headers = {};
+
+    // Smart JSON handling: If body is a plain object, stringify it and set Content-Type
+    if (options.body && !(options.body instanceof FormData) && typeof options.body === 'object') {
+        options.body = JSON.stringify(options.body);
+        options.headers['Content-Type'] = 'application/json';
+    }
 
     try {
         const res = await fetch(url, options);
@@ -18,7 +27,7 @@ async function apiCall(endpoint, options) {
         return await res.json();
     } catch (err) {
         if (err.message === "Failed to fetch") {
-            throw new Error("Cannot reach backend at " + base + ". Is it running?");
+            throw new Error("Cannot reach backend at " + base + ". Please check your internet or if the server is awake.");
         }
         throw err;
     }

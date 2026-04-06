@@ -133,10 +133,10 @@ async function login() {
   if (!u || !p) return alert("Fill all fields");
 
   try {
-    const fd = new FormData();
-    fd.append("username", u);
-    fd.append("password", p);
-    const res = await apiCall("/api/auth/login", { method: "POST", body: fd });
+    const res = await apiCall("/api/auth/login", { 
+        method: "POST", 
+        body: { username: u, password: p } 
+    });
     localStorage.setItem("user_id", res.user_id);
     window.location.href = "upload.html";
   } catch (e) { alert(e.message); }

@@ -160,16 +160,38 @@ def _ensure_ready():
         raise HTTPException(status_code=503, detail="AI Engines still preloading on Render. Please wait 30 seconds.")
 
 @app.post("/api/auth/register")
-async def register(username: str = Form(...), password: str = Form(...)):
+async def register(request: Request, username: str = Form(None), password: str = Form(None)):
     _ensure_ready()
+    # Support both JSON and Form data for cross-platform compatibility
+    if not username and not password:
+        try:
+            data = await request.json()
+            username = data.get("username")
+            password = data.get("password")
+        except: pass
+        
+    if not username or not password:
+        raise HTTPException(status_code=400, detail="Username and password required")
+        
     try:
         user_id = register_user(username.strip(), password)
         return {"user_id": user_id, "message": "User registered"}
     except Exception as exc: raise HTTPException(status_code=400, detail=str(exc))
 
 @app.post("/api/auth/login")
-async def login(username: str = Form(...), password: str = Form(...)):
+async def login(request: Request, username: str = Form(None), password: str = Form(None)):
     _ensure_ready()
+    # Support both JSON and Form data
+    if not username and not password:
+        try:
+            data = await request.json()
+            username = data.get("username")
+            password = data.get("password")
+        except: pass
+
+    if not username or not password:
+        raise HTTPException(status_code=401, detail="Invalid login")
+
     user = login_user(username.strip(), password)
     if not user: raise HTTPException(status_code=401, detail="Invalid login")
     return {"user_id": user["id"], "username": user["username"], "status": "authenticated"}

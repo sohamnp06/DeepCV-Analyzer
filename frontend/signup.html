@@ -141,11 +141,13 @@ async function setPassword() {
   if (!password) { alert("Please set a password"); return; }
 
   try {
-    const formData = new FormData();
-    formData.append("username", window._signupUsername);
-    formData.append("password", password);
-
-    await apiCall("/api/auth/register", { method: "POST", body: formData });
+    await apiCall("/api/auth/register", { 
+        method: "POST", 
+        body: { 
+            username: window._signupUsername, 
+            password: password 
+        } 
+    });
     alert("Signup successful! Please login.");
     window.location.href = "login.html";
   } catch (err) {
