@@ -186,7 +186,7 @@ nav.custom-nav {
 
 <!-- NAVBAR (ALL PAGES EXCEPT HOME) -->
 <nav class="custom-nav">
-  <h1 class="text-md font-semibold">पाशिळकरांचा वाघ Resume Screening</h1>
+  <h1 class="text-md font-semibold">DeepCV Analyzer</h1>
   <div class="flex space-x-8 text-sm font-medium">
     <a href="landing.html" class="text-gray-400 hover:text-white transition">Home</a>
     <button onclick="logout()" class="text-gray-400 hover:text-white transition">Logout</button>
@@ -286,14 +286,40 @@ nav.custom-nav {
 
     function formatInlineBold(text) {
         if (!text) return "";
-        return String(text).replace(/\*\*(.+?)\*\*/g, "<strong class=\"text-white\">$1</strong>");
+        // Handle bold **text**
+        let formatted = text.replace(/\*\*(.+?)\*\*/g, "<strong class=\"text-white font-semibold\">$1</strong>");
+        // Handle `code`
+        formatted = formatted.replace(/`(.+?)`/g, "<code class=\"bg-white/10 px-1 rounded text-blue-300 font-mono\">$1</code>");
+        return formatted;
     }
 
     function paragraphsHtml(text) {
         if (!text) return "<p class=\"text-gray-500 text-sm\">No description available.</p>";
+        
         return text.split(/\n\n+/).map(function (block) {
-            const line = block.replace(/\n/g, " ").trim();
-            return "<p class=\"mb-3 last:mb-0\">" + formatInlineBold(line) + "</p>";
+            let line = block.trim();
+            if (!line) return "";
+
+            // Handle ### header
+            if (line.startsWith("### ")) {
+                return "<h4 class=\"text-lg font-bold text-blue-400 mt-6 mb-2\">" + formatInlineBold(line.substring(4)) + "</h4>";
+            }
+            // Handle ## header
+            if (line.startsWith("## ")) {
+                return "<h3 class=\"text-xl font-extrabold text-white mt-8 mb-4 border-b border-white/10 pb-2\">" + formatInlineBold(line.substring(3)) + "</h3>";
+            }
+            // Handle blockquote
+            if (line.startsWith("> ")) {
+                return "<div class=\"border-l-4 border-gray-600 pl-4 py-1 my-4 italic text-gray-400 bg-white/5 rounded-r\">" + formatInlineBold(line.substring(2)) + "</div>";
+            }
+            // Handle bullet points
+            if (line.startsWith("- ") || line.startsWith("• ") || line.startsWith("* ")) {
+                const items = line.split(/\n/).map(li => "<li>" + formatInlineBold(li.replace(/^[-•*]\s*/, "")) + "</li>").join("");
+                return "<ul class=\"list-disc pl-6 space-y-2 my-4\">" + items + "</ul>";
+            }
+
+            // Default paragraph
+            return "<p class=\"mb-4 leading-relaxed\">" + formatInlineBold(line) + "</p>";
         }).join("");
     }
 

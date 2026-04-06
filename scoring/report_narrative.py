@@ -6,28 +6,43 @@ Uses outputs from semantic_matcher, jd_matcher, scorer, section_scorer, skill_ga
 import html
 
 
-def _strength_paragraph(label: str, strength: str, excerpt: str, max_words: int = 60) -> str:
+def _strength_paragraph(label: str, strength: str, excerpt: str, max_words: int = 80) -> str:
     strength = (strength or "Weak").strip()
     text = html.escape((excerpt or "").strip())
     words = text.split()
     if len(words) > max_words:
         text = " ".join(words[:max_words]) + "…"
 
-    tone = {
-        "Strong": "is well-written and provides good details about your background.",
-        "Moderate": "shows potential but could be improved with more specific results and achievements.",
-        "Weak": "needs more detail. Try adding more information about your specific contributions and responsibilities.",
-    }.get(strength, "could be clearer. Try focusing on your main tasks and how they relate back to the role.")
+    # Richer tone mapping
+    mapping = {
+        "Strong": (
+            f"Your **{label}** section is exemplary. It uses strong action verbs and quantifiable metrics "
+            f"that set you apart as a results-driven professional. Maintain this level of detail to "
+            f"consistently pass rigorous technical reviews."
+        ),
+        "Moderate": (
+            f"The **{label}** section shows a solid foundation but lacks the 'impact punch' needed for top-tier roles. "
+            f"We recommend shifting focus from what you *did* to what you *achieved*. Use numbers (e.g., 'Reduced latency by 20%') "
+            f"to make your contributions undeniable."
+        ),
+        "Weak": (
+            f"Currently, the **{label}** section is underselling your potential. It reads more like a job description "
+            f"than a highlight of your personal expertise. You need to add specific technical details, "
+            f"problem-solving instances, and clear outcomes to meet modern ATS standards."
+        ),
+    }
+    
+    tone = mapping.get(strength, "The section content could be more focused on role-specific outcomes.")
 
     if not text:
         return (
-            f"The **{label}** section is **{strength}** compared to typical profiles: content "
-            f"{tone} Consider expanding with concrete examples."
+            f"Our analysis indicates that the **{label}** section needs significant expansion. "
+            f"{tone} Profiles without this data often struggle with high-volume recruiter screenings."
         )
 
     return (
-        f"The **{label}** section is rated **{strength}**. Sample content suggests the candidate "
-        f"{tone} Excerpt: {text}"
+        f"{tone}\n\n"
+        f"> **Current Excerpt Analysis:** {text}"
     )
 
 
@@ -50,84 +65,96 @@ def build_analysis_narrative(
     optional = semantic_result.get("optional_skills") or []
 
     matched_list = [m[0] if isinstance(m, (list, tuple)) else m for m in matched]
-    matched_with_sim = [
-        f"{m[0]} (~{m[1]})" if isinstance(m, (list, tuple)) and len(m) > 1 else str(m)
-        for m in matched
-    ]
 
-    # --- ATS / semantic matcher ---
+    # --- ATS Matcher ---
     ats_lines = [
-        f"**Role Profile:** {role_display}",
-        "We checked your resume for the most important skills required for this role. Here is what we found:",
+        f"## 🎯 Role Compatibility Analysis: {role_display}",
+        f"Your profile shows a **{ats_score_pct:.0f}%** match with the core skills required for a {role_display} role."
     ]
     if matched_list:
-        ats_lines.append("**Your Matching Skills:** " + ", ".join(matched_list[:12]))
-    else:
-        ats_lines.append("**Your Matching Skills:** No direct matches found for the core requirements yet.")
-
+        ats_lines.append(f"✅ **Core Strengths:** Expert level proficiency in: {', '.join(matched_list[:10])}.")
+    
     if missing:
-        ats_lines.append("**Skills to Add:** " + ", ".join(missing[:10]))
-    if optional:
-        ats_lines.append("**Other Relevant Skills:** " + ", ".join(optional[:10]))
+        ats_lines.append(f"🚩 **Critical Gaps:** To reach high-priority screening thresholds, add depth in: {', '.join(missing[:8])}.")
 
     ats_matcher = "\n\n".join(ats_lines)
 
-    # --- JD matcher ---
+    # --- JD Matcher ---
     jd_short = jd_text.strip()
-    if len(jd_short) > 300:
-        jd_short = jd_short[:300] + "..."
+    if len(jd_short) > 250:
+        jd_short = jd_short[:250] + "..."
     
     jd_matcher = (
-        "We compared your entire resume against the job description to see how well your overall profile aligns with the role.\n\n"
-        f"**Matching Score:** **{jd_match_pct:.0f}%**\n\n"
-        f"**Target Requirements:** {jd_short}"
+        "## 🔍 Strategic Context Fit\n\n"
+        f"Your profile alignment sits at **{jd_match_pct:.0f}%** when compared directly to the job description requirements.\n\n"
+        f"> **Target Requirements Baseline:** {jd_short}"
     )
 
-    # --- Skill gap ---
+    # --- Areas of Improvement (Detailed Skill Gap) ---
     non_empty_missing = {k: v for k, v in gap_result.get("missing_by_category", {}).items() if v}
-    gap_parts = ["**Key Gaps Identified:**"]
+    gap_parts = ["## 🚧 Areas for Improvement"]
+    
     if non_empty_missing:
-        gap_parts.append("; ".join(f"{k.capitalize()}: {', '.join(v[:3])}" for k, v in list(non_empty_missing.items())[:5]))
+        gap_parts.append("To bridge your current gap to industry-standard expert levels, we recommend focusing on these categorical improvements:")
+        for cat, skills in list(non_empty_missing.items())[:4]:
+            cat_label = cat.replace("_", " ").title()
+            
+            # Context-aware impacts
+            impact_map = {
+                "Core Cs": "Essential for passing deep-drill technical interviews and solving complex engineering problems.",
+                "Frontend": "Critical for building responsive, high-retention user interfaces and mastering modern UI logic.",
+                "Backend": "Ensures your infrastructure is secure, idempotent, and performs well under high concurrent load.",
+                "Database": "The difference between applications that just function and those that scale efficiently.",
+                "Cloud": "Deployment expertise is a must-have for modern DevOps-oriented engineering roles.",
+                "Tools": "Mastering professional dev-tooling indicates you're ready for high-velocity agile sprints.",
+                "Programming": "Showing depth in multiple paradigms demonstrates high adaptability to new tech stacks.",
+            }
+            impact = impact_map.get(cat_label, "Adding depth here will immediately increase your value to potential employers.")
+            
+            gap_parts.append(f"🚩 **{cat_label}:** Missing {', '.join(skills[:3])}. **Impact:** {impact}")
     else:
-        gap_parts.append("Your skills are well-aligned with the core requirements of this role.")
+        gap_parts.append("Your technical skill set is exceptionally well-balanced. Your next strategic step is toward leadership and architecture.")
 
     skill_gap = "\n\n".join(gap_parts)
 
-    # --- Section-wise ---
-    education = _strength_paragraph("Education", section_quality.get("education"), sections.get("education", ""))
-    experience = _strength_paragraph("Experience", section_quality.get("experience"), sections.get("experience", ""))
-    projects = _strength_paragraph("Projects", section_quality.get("projects"), sections.get("projects", ""))
+    # --- Section Quality ---
+    education = _strength_paragraph("Educational Foundation", section_quality.get("education"), sections.get("education", ""))
+    experience = _strength_paragraph("Professional Experience", section_quality.get("experience"), sections.get("experience", ""))
+    projects = _strength_paragraph("Technical Portfolio", section_quality.get("projects"), sections.get("projects", ""))
 
-    # --- Enhanced Recommendations Logic ---
+    # --- Strategic Recommendations ---
     recs = gap_result.get("recommendations") or []
-    detailed_recs = []
+    detailed_recs = ["## 💡 Strategic Career Recommendations"]
     
-    # 1. Skill-based deep dives
+    if ats_score_pct < 60:
+        detailed_recs.append("- **Transition Strategy:** Your score indicates a possible role transition. Build 'Capstone Projects' that focus exclusively on the core technical gaps identified.")
+    
+    # Map raw recommendations to high-descriptiveness versions
     for r in recs:
-        if "frontend" in r.lower():
-            detailed_recs.append("📊 **Frontend Specialist:** Beyond just HTML/CSS, focus on mastering architectural patterns in React or Vue. Implement advanced state management (Redux/Zustand) to stand out from junior developers.")
-        elif "backend" in r.lower():
-            detailed_recs.append("⚙️ **Backend Engineering:** Strengthen your understanding of Database indexing and API performance. Consider building a microservice-oriented project to demonstrate scalability knowledge.")
-        elif "core cs" in r.lower():
-            detailed_recs.append("🧠 **CS Fundamentals:** High-scoring profiles often demonstrate strong DSA skills. We recommend solving 'hard' categorized problems on LeetCode focusing on Dynamic Programming and Graphs.")
-        elif "tools" in r.lower():
-            detailed_recs.append("🛠️ **DevOps & Tooling:** Modern roles require more than just code. Dockerize your current projects and explore CI/CD pipelines (GitHub Actions) to show you can handle production-level deployments.")
+        r_low = r.lower()
+        if "frontend" in r_low:
+            detailed_recs.append("- **Advanced Frontend Architecture:** Master architectural patterns like Redux or Context API. Focus on mastering 'React Hooks' and explore Server-Side Rendering (SSR) via Next.js for high-impact performance.")
+        elif "backend" in r_low:
+            detailed_recs.append("- **Scalable Backend Systems:** Move beyond basic CRUD. Implement caching strategies (Redis), asynchronous task processing (Celery), and secure OAuth/JWT authentication pipelines.")
+        elif "cs core" in r_low or "fundamentals" in r_low:
+            detailed_recs.append("- **Computer Science Foundations:** Deepen your understanding of Big-O complexity, Graph algorithms, and Database Internals. This depth is what separates senior engineers from juniors.")
+        elif "devops" in r_low or "tools" in r_low:
+            detailed_recs.append("- **Cloud & DevOps Proficiency:** Set up automated CI/CD pipelines using GitHub Actions. Dockerize your environments to ensure 'write once, run anywhere' production-readiness.")
+        elif "data science" in r_low or "ml" in r_low:
+            detailed_recs.append("- **Machine Learning Engineering:** Shift from running scripts to building models-as-a-service. Focus on MLOps pipelines—how to deploy, monitor, and scale models in a production ecosystem.")
+        elif "cloud" in r_low:
+            detailed_recs.append("- **Public Cloud Architecture:** Architect for the cloud first. Master VPCs, IAM security roles, and serverless architectures on platforms like AWS, GCP, or Azure.")
         else:
-            detailed_recs.append(f"✅ {r}")
+            detailed_recs.append(f"- {r}")
 
-    # 2. Section-based advice
-    if section_quality.get("projects") == "Weak":
-        detailed_recs.append("📁 **Project Portfolio:** Your projects section is currently thin. Add 2-3 deep-dive projects that solve a real-world problem, ideally with a live link and a clear README.")
+    # Add experience/project specific polish
     if section_quality.get("experience") == "Weak":
-        detailed_recs.append("💼 **Experience Metrics:** To pass senior ATS filters, transform your experience bullet points from 'tasks' into 'achievements.' Use the STAR method (Situation, Task, Action, Result) with real numbers.")
+        detailed_recs.append("- **Impact-Driven Experience:** Transform your professional bullets. Replace work 'tasks' with 'results.' Use metrics like 'Improved efficiency by 30%' or 'Reduced code-base bugs by 15%'.")
 
-    recommendations_list = (
-        "\n\n".join(detailed_recs[:6])
-        if detailed_recs
-        else "• Your profile is well-rounded. Focus on fine-tuning your summary to highlight your unique USP for this specific role."
-    )
-    recommendations_paragraph = "**Strategic Recommendations:**\n\n" + recommendations_list
+    # This creates a single block that starts with - and our renderer will turn it into a <ul>
+    recommendations_paragraph = "\n".join(detailed_recs)
 
+    # Final Construction
     full_report_text = "\n\n---\n\n".join([
         ats_matcher,
         jd_matcher,
@@ -139,7 +166,7 @@ def build_analysis_narrative(
     ])
 
     return {
-        "overview": f"Our analysis shows that your profile is currently a **{ats_score_pct:.0f}%** match for the **{role_display}** role. You have a solid foundation, especially in your matching skills, but there are clear areas where expanding your technical depth would significantly boost your ranking.",
+        "overview": f"Your profile is a **{ats_score_pct:.0f}%** match for the **{role_display}** role. You have a solid foundation, especially in your matched core competencies. To emerge as a top 5% candidate, we recommend focusing on the specific architectural and metrics-driven improvements outlined in this report.",
         "ats_matcher": ats_matcher,
         "jd_matcher": jd_matcher,
         "skill_gap": skill_gap,

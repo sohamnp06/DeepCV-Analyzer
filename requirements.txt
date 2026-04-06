@@ -3,5 +3,5 @@ uvicorn
 python-multipart
 psycopg2-binary
 PyMuPDF
-sentence-transformers
+requests
 scikit-learn
