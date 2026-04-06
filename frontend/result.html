@@ -150,9 +150,33 @@ nav.custom-nav {
 
 
 @media print {
+  body { background: white !important; color: black !important; }
   .hero-grid, .custom-nav, .no-print { display: none !important; }
-  .report-content { margin-top: 0; }
+  .report-content { margin: 0 auto; padding: 20px; width: 100% !important; max-width: 100% !important; }
+  .card { 
+      background: white !important; 
+      color: black !important; 
+      border: 1px solid #000 !important; 
+      box-shadow: none !important; 
+      backdrop-filter: none !important;
+      padding: 20px !important;
+      margin-bottom: 20px !important;
+      page-break-inside: avoid;
+  }
+  .label-blue { color: #000 !important; font-weight: 800 !important; border-bottom: 1px solid #000; display: inline-block; padding-bottom: 2px; }
+  .tag { background: white !important; color: black !important; border: 1px solid black !important; font-weight: bold !important; }
+  .tag-red { border-width: 1px !important; font-weight: bold; }
+  .score-hero { color: black !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .text-blue-400, .text-green-400, .text-red-400, .text-white, .desc-text { color: #000 !important; }
+
+  /* 📄 FORCE TWO PAGES 📄 */
+  .print-page-break { page-break-after: always; }
+  .print-only { display: block !important; }
+  .no-screen { display: block !important; }
+  .no-print-padding { padding: 0 !important; border: none !important; margin: 0 !important; }
 }
+.no-screen { display: none; }
+.screen-only { display: block; }
 </style>
 </head>
 
@@ -164,12 +188,14 @@ nav.custom-nav {
 <nav class="custom-nav">
   <h1 class="text-md font-semibold">पाशिळकरांचा वाघ Resume Screening</h1>
   <div class="flex space-x-8 text-sm font-medium">
-    <a href="index.html" class="text-gray-400 hover:text-white transition">Home</a>
+    <a href="landing.html" class="text-gray-400 hover:text-white transition">Home</a>
     <button onclick="logout()" class="text-gray-400 hover:text-white transition">Logout</button>
   </div>
 </nav>
 
 <div class="report-content">
+  <!-- START PAGE 1 WRAPPER (Print View) -->
+  <div class="print-page-break">
   
   <!-- 🔥 DEEP VERBAL REPORT SECTION 🔥 -->
   <div class="card">
@@ -188,24 +214,20 @@ nav.custom-nav {
 
   <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
       <div class="card p-8 !mb-0">
-          <span class="label-blue">ATS semantic matcher</span>
+          <span class="label-blue">Skills Match</span>
           <div id="atsNarrative" class="desc-text text-sm mt-4"></div>
           <div class="tag-cloud mt-6" id="matchedTags"></div>
       </div>
       <div class="card p-8 !mb-0">
-          <span class="label-blue">JD matcher</span>
+          <span class="label-blue">Job Alignment</span>
           <div id="jdScore" class="text-4xl font-bold mb-4 text-green-400">0%</div>
           <div id="jdNarrative" class="desc-text text-sm"></div>
       </div>
   </div>
 
-  <div class="card mb-8">
-      <span class="label-blue">Composite scorer</span>
-      <div id="compositeNarrative" class="desc-text mt-4"></div>
-  </div>
 
   <div class="card mb-8 bg-red-500/5 border-red-500/20">
-      <span class="label-blue text-red-400">Skill gap &amp; category analysis</span>
+      <span class="label-blue text-red-400">Areas for Improvement</span>
       <div class="tag-cloud my-6" id="missingTags"></div>
       <div id="skillGapNarrative" class="desc-text"></div>
   </div>
@@ -239,10 +261,14 @@ nav.custom-nav {
       <div id="recommendationsNarrative" class="desc-text"></div>
       <ul id="strategyList" class="desc-text list-disc pl-6 space-y-4 hidden"></ul>
   </div>
+  </div> <!-- END PAGE 1 WRAPPER -->
+  
+  <!-- PAGE 2 START -->
 
-  <div class="card mb-8">
-      <span class="label-blue">Full narrative report</span>
-      <p class="desc-text text-sm text-gray-500 mb-4">Generated from scoring modules (semantic matcher, JD matcher, composite scorer, skill gap, section scorer).</p>
+  <!-- 🔥 FULL NARRATIVE REPORT (PRINT ONLY) 🔥 -->
+  <div class="card mb-8 no-screen print-only no-print-padding">
+      <span class="label-blue">Full Narrative Analysis Report</span>
+      <p class="desc-text text-sm text-gray-500 mb-4">A complete technical breakdown of the candidate's profile compiled by ATS AI.</p>
       <div id="fullReportText" class="desc-text leading-relaxed space-y-4"></div>
   </div>
 
@@ -282,21 +308,25 @@ nav.custom-nav {
     const n = data.narratives;
 
     if (n) {
-        const overviewP = document.querySelector(".desc-text.text-xl.border-l-4");
-        if (overviewP) {
-            overviewP.innerHTML = formatInlineBold(n.overview || "") +
-                " <span class=\"text-white font-bold\">" + summ + "</span> alignment with the inferred role profile.";
+        try {
+            const overviewP = document.querySelector(".desc-text.text-xl.border-l-4");
+            if (overviewP) {
+                overviewP.innerHTML = formatInlineBold(n.overview || "") +
+                    " <span class=\"text-white font-bold\">" + summ + "</span> alignment with the inferred role profile.";
+            }
+            if (document.getElementById("atsNarrative")) document.getElementById("atsNarrative").innerHTML = paragraphsHtml(n.ats_matcher);
+            if (document.getElementById("jdNarrative")) document.getElementById("jdNarrative").innerHTML = paragraphsHtml(n.jd_matcher);
+            if (document.getElementById("skillGapNarrative")) document.getElementById("skillGapNarrative").innerHTML = paragraphsHtml(n.skill_gap);
+            if (document.getElementById("eduVerbal")) document.getElementById("eduVerbal").innerHTML = paragraphsHtml(n.education);
+            if (document.getElementById("expVerbal")) document.getElementById("expVerbal").innerHTML = paragraphsHtml(n.experience);
+            if (document.getElementById("projVerbal")) document.getElementById("projVerbal").innerHTML = paragraphsHtml(n.projects);
+            if (document.getElementById("recommendationsNarrative")) document.getElementById("recommendationsNarrative").innerHTML = paragraphsHtml(n.recommendations_paragraph);
+            if (document.getElementById("fullReportText")) document.getElementById("fullReportText").innerHTML = paragraphsHtml(n.full_report_text);
+            document.getElementById("strategyList").classList.add("hidden");
+        } catch (e) {
+            console.error("Report rendering error:", e);
+            document.getElementById("atsNarrative").innerHTML = "<p class='text-red-400'>Analysis report format has updated. Please <strong>Analyze Another Resume</strong> to see the full report.</p>";
         }
-        document.getElementById("atsNarrative").innerHTML = paragraphsHtml(n.ats_matcher);
-        document.getElementById("jdNarrative").innerHTML = paragraphsHtml(n.jd_matcher);
-        document.getElementById("compositeNarrative").innerHTML = paragraphsHtml(n.composite_scorer);
-        document.getElementById("skillGapNarrative").innerHTML = paragraphsHtml(n.skill_gap);
-        document.getElementById("eduVerbal").innerHTML = paragraphsHtml(n.education);
-        document.getElementById("expVerbal").innerHTML = paragraphsHtml(n.experience);
-        document.getElementById("projVerbal").innerHTML = paragraphsHtml(n.projects);
-        document.getElementById("recommendationsNarrative").innerHTML = paragraphsHtml(n.recommendations_paragraph);
-        document.getElementById("fullReportText").innerHTML = paragraphsHtml(n.full_report_text);
-        document.getElementById("strategyList").classList.add("hidden");
     } else {
         document.getElementById("atsNarrative").textContent = "Run analysis again to load narrative descriptions from the server.";
         document.getElementById("strategyList").classList.remove("hidden");
@@ -310,9 +340,11 @@ nav.custom-nav {
         document.getElementById("projVerbal").textContent = fallback(data.section_quality.projects);
     }
 
-    document.getElementById("eduGrade").innerText = data.section_quality.education;
-    document.getElementById("expGrade").innerText = data.section_quality.experience;
-    document.getElementById("projGrade").innerText = data.section_quality.projects;
+    if (data.section_quality) {
+        document.getElementById("eduGrade").innerText = data.section_quality.education || "N/A";
+        document.getElementById("expGrade").innerText = data.section_quality.experience || "N/A";
+        document.getElementById("projGrade").innerText = data.section_quality.projects || "N/A";
+    }
 
     const inject = (id, list, color) => {
         const div = document.getElementById(id);

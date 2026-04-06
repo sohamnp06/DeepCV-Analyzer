@@ -20,13 +20,8 @@ body {
   margin: 0;
   overflow-x: hidden;
 
-  /* optional smooth snap */
-  scroll-snap-type: y proximity;
-}
-
-/* 🔥 only snap sections */
-section {
-  scroll-snap-align: start;
+  /* Free scrolling for better UX */
+  overflow-y: auto;
 }
 
 /* HERO FULL SCREEN ONLY */

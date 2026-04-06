@@ -14,10 +14,10 @@ def _strength_paragraph(label: str, strength: str, excerpt: str, max_words: int 
         text = " ".join(words[:max_words]) + "…"
 
     tone = {
-        "Strong": "reads with depth and sufficient detail for ATS parsers.",
-        "Moderate": "is present but could use more quantified outcomes and keywords.",
-        "Weak": "is thin or missing; recruiters and ATS tools may under-score this area.",
-    }.get(strength, "needs clearer structure and stronger keywords.")
+        "Strong": "is well-written and provides good details about your background.",
+        "Moderate": "shows potential but could be improved with more specific results and achievements.",
+        "Weak": "needs more detail. Try adding more information about your specific contributions and responsibilities.",
+    }.get(strength, "could be clearer. Try focusing on your main tasks and how they relate back to the role.")
 
     if not text:
         return (
@@ -57,131 +57,91 @@ def build_analysis_narrative(
 
     # --- ATS / semantic matcher ---
     ats_lines = [
-        f"**Role profile:** {role_display}.",
-        (
-            "**ATS semantic matcher:** Your resume was compared against role must-have skills using "
-            "embedding similarity. Each keyword is scored against your strongest matching lines."
-        ),
-        f"**Aggregate skill alignment (internal):** {semantic_result.get('score', 0):.2f} on a 0–1 scale "
-        f"(mapped to **{ats_score_pct:.1f}%** overall ATS-style score after combining experience and education).",
+        f"**Role Profile:** {role_display}",
+        "We checked your resume for the most important skills required for this role. Here is what we found:",
     ]
-    if matched_with_sim:
-        ats_lines.append(
-            "**Signals found:** " + ", ".join(matched_with_sim[:12])
-            + ("…" if len(matched_with_sim) > 12 else "")
-        )
+    if matched_list:
+        ats_lines.append("**Your Matching Skills:** " + ", ".join(matched_list[:12]))
     else:
-        ats_lines.append("**Signals found:** No strong must-have matches above the similarity threshold.")
+        ats_lines.append("**Your Matching Skills:** No direct matches found for the core requirements yet.")
 
     if missing:
-        ats_lines.append(
-            "**Must-have gaps:** " + ", ".join(missing[:15]) + ("…" if len(missing) > 15 else "")
-        )
+        ats_lines.append("**Skills to Add:** " + ", ".join(missing[:10]))
     if optional:
-        ats_lines.append(
-            "**Optional / nice-to-have skills for this role:** " + ", ".join(optional[:10])
-            + ("…" if len(optional) > 10 else "")
-        )
+        ats_lines.append("**Other Relevant Skills:** " + ", ".join(optional[:10]))
 
     ats_matcher = "\n\n".join(ats_lines)
 
     # --- JD matcher ---
     jd_short = jd_text.strip()
-    if len(jd_short) > 400:
-        jd_short = jd_short[:400] + "…"
+    if len(jd_short) > 300:
+        jd_short = jd_short[:300] + "..."
+    
     jd_matcher = (
-        "**Job description match:** The full resume text and the inferred target JD were embedded and "
-        "compared with cosine similarity.\n\n"
-        f"**Match score:** **{jd_match_pct:.1f}%** — higher means your wording and themes overlap more "
-        "with the role summary below.\n\n"
-        f"**Reference JD used:** {jd_short}"
-    )
-
-    # --- Composite scorer (scorer.py) ---
-    composite_scorer = (
-        "**Composite score (scorer):** Combines semantic skill alignment (~60%), experience "
-        "section presence (~25%), and education signals (~15%).\n\n"
-        f"**Raw composite (0–1):** {final_score_raw:.2f} → displayed as **{ats_score_pct:.1f}%** after scaling."
+        "We compared your entire resume against the job description to see how well your overall profile aligns with the role.\n\n"
+        f"**Matching Score:** **{jd_match_pct:.0f}%**\n\n"
+        f"**Target Requirements:** {jd_short}"
     )
 
     # --- Skill gap ---
-    strong_by_cat = gap_result.get("strong_by_category") or {}
-    missing_by_cat = gap_result.get("missing_by_category") or {}
-    recs = gap_result.get("recommendations") or []
-
-    gap_parts = [
-        "**Skill gap analysis:** Groups matched and missing skills into categories (programming, frontend, "
-        "backend, database, core CS, tools, other)."
-    ]
-    non_empty_missing = {k: v for k, v in missing_by_cat.items() if v}
+    non_empty_missing = {k: v for k, v in gap_result.get("missing_by_category", {}).items() if v}
+    gap_parts = ["**Key Gaps Identified:**"]
     if non_empty_missing:
-        gap_parts.append(
-            "**Gaps by category:** "
-            + "; ".join(f"{k}: {', '.join(v[:5])}" for k, v in list(non_empty_missing.items())[:8])
-        )
+        gap_parts.append("; ".join(f"{k.capitalize()}: {', '.join(v[:3])}" for k, v in list(non_empty_missing.items())[:5]))
     else:
-        gap_parts.append("**Gaps by category:** No categorized gaps — must-have list may already be covered.")
-
-    if non_empty_missing:
-        gap_parts.append(
-            "**Strengths by category (matched):** "
-            + "; ".join(
-                f"{k}: {', '.join(v[:5])}"
-                for k, v in strong_by_cat.items()
-                if v
-            )[:800]
-        )
-
-    if recs:
-        gap_parts.append("**Tailored recommendations:** " + " ".join(recs))
+        gap_parts.append("Your skills are well-aligned with the core requirements of this role.")
 
     skill_gap = "\n\n".join(gap_parts)
 
-    # --- Section-wise (section_scorer + excerpts) ---
-    education = _strength_paragraph(
-        "Education",
-        section_quality.get("education"),
-        sections.get("education", ""),
-    )
-    experience = _strength_paragraph(
-        "Experience",
-        section_quality.get("experience"),
-        sections.get("experience", ""),
-    )
-    projects = _strength_paragraph(
-        "Projects",
-        section_quality.get("projects"),
-        sections.get("projects", ""),
-    )
+    # --- Section-wise ---
+    education = _strength_paragraph("Education", section_quality.get("education"), sections.get("education", ""))
+    experience = _strength_paragraph("Experience", section_quality.get("experience"), sections.get("experience", ""))
+    projects = _strength_paragraph("Projects", section_quality.get("projects"), sections.get("projects", ""))
 
-    recommendations_paragraph = (
-        "**Recommendations:**\n\n"
-        + "\n".join(f"• {r}" for r in recs)
-        if recs
-        else "• No specific gaps triggered automated recommendations; keep projects and metrics visible."
-    )
+    # --- Enhanced Recommendations Logic ---
+    recs = gap_result.get("recommendations") or []
+    detailed_recs = []
+    
+    # 1. Skill-based deep dives
+    for r in recs:
+        if "frontend" in r.lower():
+            detailed_recs.append("📊 **Frontend Specialist:** Beyond just HTML/CSS, focus on mastering architectural patterns in React or Vue. Implement advanced state management (Redux/Zustand) to stand out from junior developers.")
+        elif "backend" in r.lower():
+            detailed_recs.append("⚙️ **Backend Engineering:** Strengthen your understanding of Database indexing and API performance. Consider building a microservice-oriented project to demonstrate scalability knowledge.")
+        elif "core cs" in r.lower():
+            detailed_recs.append("🧠 **CS Fundamentals:** High-scoring profiles often demonstrate strong DSA skills. We recommend solving 'hard' categorized problems on LeetCode focusing on Dynamic Programming and Graphs.")
+        elif "tools" in r.lower():
+            detailed_recs.append("🛠️ **DevOps & Tooling:** Modern roles require more than just code. Dockerize your current projects and explore CI/CD pipelines (GitHub Actions) to show you can handle production-level deployments.")
+        else:
+            detailed_recs.append(f"✅ {r}")
 
-    full_report_text = "\n\n---\n\n".join(
-        [
-            ats_matcher,
-            jd_matcher,
-            composite_scorer,
-            skill_gap,
-            education,
-            experience,
-            projects,
-            recommendations_paragraph,
-        ]
+    # 2. Section-based advice
+    if section_quality.get("projects") == "Weak":
+        detailed_recs.append("📁 **Project Portfolio:** Your projects section is currently thin. Add 2-3 deep-dive projects that solve a real-world problem, ideally with a live link and a clear README.")
+    if section_quality.get("experience") == "Weak":
+        detailed_recs.append("💼 **Experience Metrics:** To pass senior ATS filters, transform your experience bullet points from 'tasks' into 'achievements.' Use the STAR method (Situation, Task, Action, Result) with real numbers.")
+
+    recommendations_list = (
+        "\n\n".join(detailed_recs[:6])
+        if detailed_recs
+        else "• Your profile is well-rounded. Focus on fine-tuning your summary to highlight your unique USP for this specific role."
     )
+    recommendations_paragraph = "**Strategic Recommendations:**\n\n" + recommendations_list
+
+    full_report_text = "\n\n---\n\n".join([
+        ats_matcher,
+        jd_matcher,
+        skill_gap,
+        education,
+        experience,
+        projects,
+        recommendations_paragraph,
+    ])
 
     return {
-        "overview": (
-            f"This report summarizes your resume for **{role_display}**. "
-            f"Overall ATS-style score: **{ats_score_pct:.1f}%**. JD alignment: **{jd_match_pct:.1f}%**."
-        ),
+        "overview": f"Our analysis shows that your profile is currently a **{ats_score_pct:.0f}%** match for the **{role_display}** role. You have a solid foundation, especially in your matching skills, but there are clear areas where expanding your technical depth would significantly boost your ranking.",
         "ats_matcher": ats_matcher,
         "jd_matcher": jd_matcher,
-        "composite_scorer": composite_scorer,
         "skill_gap": skill_gap,
         "education": education,
         "experience": experience,
