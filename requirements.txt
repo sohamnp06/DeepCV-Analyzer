@@ -5,4 +5,3 @@ psycopg2-binary
 PyMuPDF
 sentence-transformers
 scikit-learn
-python-dotenv
