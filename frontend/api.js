@@ -22,7 +22,13 @@ async function apiCall(endpoint, options = {}) {
         const res = await fetch(url, options);
         if (!res.ok) {
             const body = await res.json().catch(() => ({ detail: "Server error" }));
-            throw new Error(body.detail || "Request failed");
+            let msg = body.detail || "Request failed";
+            if (typeof msg === 'object' && Array.isArray(msg)) {
+               msg = msg.map(e => `${e.loc.join('.')}: ${e.msg}`).join('\n');
+            } else if (typeof msg === 'object') {
+               msg = JSON.stringify(msg);
+            }
+            throw new Error(msg);
         }
         return await res.json();
     } catch (err) {
