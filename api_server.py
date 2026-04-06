@@ -129,6 +129,7 @@ async def health():
     return {
         "status": status,
         "db": DB_READY,
+        "db_error": DB_ERROR if not DB_READY else None,
         "ai_engines": ENGINES_READY,
         "timestamp": time.time()
     }
