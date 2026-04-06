@@ -151,7 +151,11 @@ async def health():
 
 @app.get("/")
 def read_root():
-    return {"status": "online", "service": "DeepCV API"}
+    return {
+        "status": "online",
+        "service": "DeepCV API",
+        "version": "v1.0.2-fixed-auth"
+    }
 
 def _ensure_ready():
     if not DB_READY:
