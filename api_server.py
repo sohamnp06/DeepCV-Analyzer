@@ -103,7 +103,7 @@ DEFAULT_JD = {
     "web_developer": "Looking for a web developer with HTML, CSS, JavaScript, React, Node, API and Git skills.",
     "software_developer": "Looking for a software developer with Python OR Java, DSA, DBMS, and system design.",
     "data_scientist": "Looking for a data scientist with Python, ML, pandas, numpy, SQL, and statistics.",
-    "machine_learning_engineer": "Looking for a ML engineer with Python, PyTorch/TensorFlow, NLP, and CV.",
+    "ml_engineer": "Looking for a ML engineer with Python, PyTorch/TensorFlow, NLP, and CV.",
     "data_analyst": "Looking for a data analyst with Excel, SQL, Tableau/PowerBI, and Python.",
     "devops_engineer": "Looking for a DevOps engineer with AWS/Azure, Docker, Kubernetes, and CI/CD.",
     "product_manager": "Looking for a Product Manager with Agile, JIRA, and roadmap planning."
@@ -111,14 +111,34 @@ DEFAULT_JD = {
 
 def infer_role(resume_text):
     text = resume_text.lower()
+    
+    try:
+        import json
+        with open("data/ats_keywords.json", "r") as f:
+            ats_data = json.load(f)
+            
+        scores = {}
+        for role, keywords_dict in ats_data.items():
+            must_have = keywords_dict.get("must_have", [])
+            optional = keywords_dict.get("optional", [])
+            all_keywords = must_have + optional
+            
+            # Sum how many times each keyword appears across both must_have and optional arrays
+            scores[role] = sum(text.count(k.lower()) for k in all_keywords)
+            
+        if scores:
+            return max(scores, key=scores.get)
+    except Exception as e:
+        logger.error(f"Error loading ats_keywords in infer_role: {e}")
+
     scores = {
-        "web_developer": sum(text.count(k) for k in ["html", "css", "react", "node", "web"]),
-        "software_developer": sum(text.count(k) for k in ["java", "dsa", "c++", "system"]),
-        "data_scientist": sum(text.count(k) for k in ["machine learning", "python", "pandas"]),
-        "machine_learning_engineer": sum(text.count(k) for k in ["pytorch", "nlp", "llm"]),
-        "data_analyst": sum(text.count(k) for k in ["sql", "excel", "dashboard"]),
-        "devops_engineer": sum(text.count(k) for k in ["aws", "docker", "kubernetes"]),
-        "product_manager": sum(text.count(k) for k in ["agile", "jira", "roadmap"])
+        "web_developer": sum(text.count(k) for k in ["html", "css", "react", "node", "web developer"]),
+        "software_developer": sum(text.count(k) for k in ["java", "dsa", "c++", "system design", "software engineer", "backend"]),
+        "data_scientist": sum(text.count(k) for k in ["data scientist", "machine learning", "python", "pandas", "numpy", "statistics"]),
+        "ml_engineer": sum(text.count(k) for k in ["ml engineer", "machine learning", "pytorch", "nlp", "llm", "transformers", "scikit-learn", "deep learning"]),
+        "data_analyst": sum(text.count(k) for k in ["data analyst", "sql", "excel", "dashboard", "tableau", "power bi"]),
+        "devops_engineer": sum(text.count(k) for k in ["devops", "aws", "docker", "kubernetes", "ci/cd"]),
+        "product_manager": sum(text.count(k) for k in ["product manager", "agile", "jira", "roadmap", "scrum"])
     }
     return max(scores, key=scores.get)
 
@@ -211,7 +231,7 @@ async def analyze_resume(file: UploadFile = File(...), user_id: int = Form(...))
         raw_text = extract_text(temp_path)
         cleaned = clean_text(raw_text)
         role = infer_role(cleaned)
-        jd_text = DEFAULT_JD[role]
+        jd_text = DEFAULT_JD.get(role, f"Looking for a {role.replace('_', ' ').title()} with strong matching technical background.")
 
         sections = get_structured_sections(cleaned)
         semantic_result = semantic_match(cleaned, role)
