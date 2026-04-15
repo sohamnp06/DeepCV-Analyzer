@@ -174,27 +174,6 @@
     ]
   },
 
-  "business_analyst": {
-    "must_have": [
-      "excel",
-      "sql",
-      "data visualization",
-      "business intelligence",
-      "requirement gathering",
-      "stakeholder communication",
-      "problem solving",
-      "domain knowledge",
-      "documentation skills"
-    ],
-    "optional": [
-      "python",
-      "power bi / tableau",
-      "agile / scrum",
-      "process modeling",
-      "basic statistics"
-    ]
-  },
-
   "cyber_security_engineer": {
     "must_have": [
       "networking fundamentals",
