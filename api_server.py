@@ -14,8 +14,6 @@ from config import load_env_file
 from database.db import init_db, insert_result, login_user, register_user, check_user_exists, get_db_connection
 from scoring.report_narrative import build_analysis_narrative
 
-# We will dynamically import these to allow the server to open the port FIRST
-# This Prevents Render "No open ports detected" timeouts.
 get_structured_sections = None
 extract_text = None
 clean_text = None
@@ -27,7 +25,6 @@ generate_skill_gap = None
 
 load_env_file()
 
-# Logging configuration
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("deepcv-api")
 
@@ -35,31 +32,34 @@ DB_READY = False
 DB_ERROR = ""
 ENGINES_READY = False
 
-async def preload_engines():
+def load_ml_modules_sync():
     global get_structured_sections, extract_text, clean_text, match_resume_to_jd
     global compute_score, evaluate_sections, semantic_match, generate_skill_gap, ENGINES_READY
     
+    from nlp.section_classifier import get_structured_sections as gss
+    from parser.extract_text import extract_text as et
+    from parser.utils import clean_text as ct
+    from scoring.jd_matcher import match_resume_to_jd as mrj
+    from scoring.scorer import compute_score as cs
+    from scoring.section_scorer import evaluate_sections as es
+    from scoring.semantic_matcher import semantic_match as sm
+    from scoring.skill_gap import generate_skill_gap as gsg
+    
+    get_structured_sections = gss
+    extract_text = et
+    clean_text = ct
+    match_resume_to_jd = mrj
+    compute_score = cs
+    evaluate_sections = es
+    semantic_match = sm
+    generate_skill_gap = gsg
+    
+    ENGINES_READY = True
+
+async def preload_engines():
     logger.info("Starting background preload of NLP and Scoring engines...")
     try:
-        from nlp.section_classifier import get_structured_sections as gss
-        from parser.extract_text import extract_text as et
-        from parser.utils import clean_text as ct
-        from scoring.jd_matcher import match_resume_to_jd as mrj
-        from scoring.scorer import compute_score as cs
-        from scoring.section_scorer import evaluate_sections as es
-        from scoring.semantic_matcher import semantic_match as sm
-        from scoring.skill_gap import generate_skill_gap as gsg
-        
-        get_structured_sections = gss
-        extract_text = et
-        clean_text = ct
-        match_resume_to_jd = mrj
-        compute_score = cs
-        evaluate_sections = es
-        semantic_match = sm
-        generate_skill_gap = gsg
-        
-        ENGINES_READY = True
+        await asyncio.to_thread(load_ml_modules_sync)
         logger.info("AI Engines loaded successfully in background.")
     except Exception as e:
         logger.error(f"Failed to preload modules: {e}")
@@ -176,8 +176,6 @@ async def get_credentials(request: Request, username: str, password: str):
 @app.post("/api/auth/register")
 async def register(request: Request):
     _ensure_ready()
-    # Support both JSON and Form data for cross-platform compatibility
-    # Manually extract since we removed auto-validation parameters to avoid 422 errors
     u, p = await get_credentials(request, None, None)
     
     if not u or not p:
@@ -191,7 +189,6 @@ async def register(request: Request):
 @app.post("/api/auth/login")
 async def login(request: Request):
     _ensure_ready()
-    # Support both JSON and Form data
     u, p = await get_credentials(request, None, None)
 
     if not u or not p:
@@ -268,11 +265,10 @@ async def analyze_resume(file: UploadFile = File(...), user_id: int = Form(...))
         raise HTTPException(status_code=500, detail="Internal analysis error")
     finally:
         if os.path.exists(temp_path): os.remove(temp_path)
-# Final: Mount Frontend static files
-# This allows the entire UI (index, login, result, etc.) to be served on the SAME PORT as the API
 app.mount("/", StaticFiles(directory="frontend", html=True), name="frontend")
 
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8080)
+    port = int(os.environ.get("PORT", 8080))
+    uvicorn.run(app, host="0.0.0.0", port=port)
