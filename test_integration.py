@@ -2,7 +2,6 @@ import os
 from config import load_env_file
 from models.embedding_model import get_embedding
 
-# Use same config as the app
 load_env_file()
 
 def test_single_embedding():

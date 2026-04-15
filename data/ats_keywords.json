@@ -5,19 +5,24 @@
       "css",
       "javascript",
       "react",
-      "node",
-      "api",
+      "node.js",
+      "rest api design",
       "responsive design",
-      "git"
+      "git",
+      "browser debugging",
+      "web performance optimization",
+      "basic system design (frontend/backend interaction)"
     ],
     "optional": [
-      "angular",
-      "vue",
-      "bootstrap",
-      "tailwind",
+      "next.js",
+      "typescript",
+      "tailwind css",
       "webpack",
       "vite",
-      "express"
+      "express.js",
+      "authentication (jwt/oauth)",
+      "web security basics",
+      "testing (jest/cypress)"
     ]
   },
 
@@ -28,16 +33,21 @@
       "data structures",
       "algorithms",
       "dbms",
-      "operating system",
-      "git"
+      "operating systems",
+      "object oriented programming",
+      "git",
+      "problem solving (leetcode level)",
+      "time and space complexity analysis"
     ],
     "optional": [
       "c++",
-      "c#",
       "system design",
-      "cloud",
-      "testing",
-      "debugging"
+      "low level design",
+      "multithreading",
+      "design patterns",
+      "debugging",
+      "unit testing",
+      "api development"
     ]
   },
 
@@ -48,14 +58,271 @@
       "pandas",
       "numpy",
       "sql",
-      "statistics"
-    ],
-    "optional": [
+      "statistics",
       "deep learning",
       "nlp",
+      "data cleaning",
+      "feature engineering",
+      "model evaluation",
       "matplotlib",
       "seaborn",
-      "power bi"
+      "power bi / tableau",
+      "business understanding"
+    ],
+    "optional": [
+      "mlops",
+      "deployment (flask/fastapi)",
+      "big data (spark)",
+      "a/b testing",
+      "causal inference",
+      "time series analysis"
+    ]
+  },
+
+  "ml_engineer": {
+    "must_have": [
+      "python",
+      "machine learning",
+      "deep learning",
+      "scikit-learn",
+      "pytorch / tensorflow",
+      "feature engineering",
+      "model deployment",
+      "ml pipelines",
+      "docker",
+      "api development",
+      "sql",
+      "system design for ml"
+    ],
+    "optional": [
+      "kubernetes",
+      "mlflow",
+      "airflow",
+      "spark",
+      "model monitoring",
+      "distributed training",
+      "optimization techniques"
+    ]
+  },
+
+  "ai_engineer": {
+    "must_have": [
+      "python",
+      "deep learning",
+      "transformers",
+      "nlp",
+      "computer vision",
+      "pytorch / tensorflow",
+      "hugging face",
+      "llms",
+      "rag systems",
+      "prompt engineering",
+      "api integration",
+      "model deployment"
+    ],
+    "optional": [
+      "fine tuning llms",
+      "langchain",
+      "vector databases",
+      "multi modal ai",
+      "reinforcement learning",
+      "edge ai"
+    ]
+  },
+
+  "aiml_engineer": {
+    "must_have": [
+      "python",
+      "machine learning",
+      "deep learning",
+      "data preprocessing",
+      "feature engineering",
+      "model evaluation",
+      "pytorch / tensorflow",
+      "nlp / cv basics",
+      "deployment basics",
+      "sql"
+    ],
+    "optional": [
+      "mlops",
+      "cloud (aws/gcp/azure)",
+      "docker",
+      "advanced optimization",
+      "research papers reading"
+    ]
+  },
+
+  "data_analyst": {
+    "must_have": [
+      "sql",
+      "excel",
+      "python (pandas)",
+      "data visualization",
+      "power bi / tableau",
+      "data cleaning",
+      "statistics basics",
+      "business insights",
+      "dashboard building",
+      "communication skills"
+    ],
+    "optional": [
+      "a/b testing",
+      "advanced excel",
+      "big data tools",
+      "automation (python scripts)",
+      "storytelling with data"
+    ]
+  },
+
+  "business_analyst": {
+    "must_have": [
+      "excel",
+      "sql",
+      "data visualization",
+      "business intelligence",
+      "requirement gathering",
+      "stakeholder communication",
+      "problem solving",
+      "domain knowledge",
+      "documentation skills"
+    ],
+    "optional": [
+      "python",
+      "power bi / tableau",
+      "agile / scrum",
+      "process modeling",
+      "basic statistics"
+    ]
+  },
+
+  "cyber_security_engineer": {
+    "must_have": [
+      "networking fundamentals",
+      "operating systems",
+      "linux",
+      "cryptography basics",
+      "web security",
+      "penetration testing basics",
+      "vulnerability assessment",
+      "security tools (nmap, wireshark)",
+      "incident response",
+      "scripting (python/bash)"
+    ],
+    "optional": [
+      "ethical hacking",
+      "cloud security",
+      "reverse engineering",
+      "malware analysis",
+      "siem tools",
+      "zero trust architecture"
+    ]
+  },
+
+  "cloud_engineer": {
+    "must_have": [
+      "aws / azure / gcp",
+      "linux",
+      "networking",
+      "docker",
+      "kubernetes",
+      "infrastructure as code",
+      "ci/cd pipelines",
+      "monitoring tools",
+      "security basics",
+      "scripting (python/bash)"
+    ],
+    "optional": [
+      "terraform",
+      "ansible",
+      "serverless architecture",
+      "cost optimization",
+      "multi cloud strategy"
+    ]
+  },
+
+  "devops_engineer": {
+    "must_have": [
+      "linux",
+      "git",
+      "ci/cd",
+      "docker",
+      "kubernetes",
+      "cloud platforms",
+      "monitoring (prometheus/grafana)",
+      "scripting",
+      "automation",
+      "infrastructure as code"
+    ],
+    "optional": [
+      "terraform",
+      "ansible",
+      "helm",
+      "security (devsecops)",
+      "scaling systems"
+    ]
+  },
+
+  "backend_developer": {
+    "must_have": [
+      "python / java / node.js",
+      "api development",
+      "databases (sql/nosql)",
+      "system design",
+      "authentication",
+      "scalability",
+      "caching",
+      "microservices",
+      "git"
+    ],
+    "optional": [
+      "graphql",
+      "event driven architecture",
+      "kafka",
+      "redis",
+      "testing"
+    ]
+  },
+
+  "frontend_developer": {
+    "must_have": [
+      "html",
+      "css",
+      "javascript",
+      "react",
+      "responsive design",
+      "state management",
+      "performance optimization",
+      "browser debugging",
+      "api integration",
+      "git"
+    ],
+    "optional": [
+      "next.js",
+      "typescript",
+      "tailwind",
+      "animations",
+      "testing"
+    ]
+  },
+
+  "full_stack_developer": {
+    "must_have": [
+      "frontend + backend",
+      "react",
+      "node.js",
+      "databases",
+      "api development",
+      "system design",
+      "authentication",
+      "deployment",
+      "git",
+      "next.js"
+    ],
+    "optional": [
+      "docker",
+      "cloud",
+      "testing",
+      "microservices"
     ]
   }
 }

@@ -2,7 +2,6 @@ import os
 import requests
 from config import load_env_file
 
-# Load existing .env
 load_env_file()
 
 API_URL = "https://router.huggingface.co/hf-inference/models/sentence-transformers/all-MiniLM-L6-v2"

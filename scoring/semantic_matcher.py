@@ -30,13 +30,10 @@ def normalize(text):
 
 def semantic_match(resume_text, role):
     data = load_keywords()
-
     role_data = data[role]
-
     must_have = role_data["must_have"]
     optional = role_data["optional"]
 
-    # Normalize resume
     resume_text = normalize(resume_text)
 
     lines = list(set([
@@ -54,10 +51,8 @@ def semantic_match(resume_text, role):
 
     for i, keyword_emb in enumerate(keyword_embeddings):
         sims = cosine_similarity([keyword_emb], line_embeddings)[0]
-
         best_score = max(sims)
         scores.append(best_score)
-
         keyword = must_have[i]
 
         if best_score > 0.4:

@@ -18,7 +18,6 @@ body {
   overflow-x: hidden;
 }
 
-/* 🔥 THE ORIGINAL BLUE GRID UI 🔥 */
 .hero-grid {
   position: fixed;
   inset: 0;
@@ -39,7 +38,6 @@ body {
   filter: drop-shadow(0 0 10px rgba(59,130,246,0.5));
 }
 
-/* Glass Navbar */
 nav.custom-nav {
   position: fixed;
   top: 24px;
@@ -102,7 +100,6 @@ nav.custom-nav {
 
 <div class="hero-grid"></div>
 
-<!-- NAVBAR (WITH HOME & LOGOUT) -->
 <nav class="custom-nav">
   <h1 class="text-md font-semibold">DeepCV Analyzer</h1>
   <div class="flex space-x-8 text-sm font-medium">
@@ -117,7 +114,7 @@ nav.custom-nav {
     
     <div id="uploadForm">
         <label for="fileInput" class="drop-zone block">
-            <div class="text-5xl mb-4">📄</div>
+            <div class="text-5xl mb-4"></div>
             <p id="fileName" class="text-gray-300 font-medium tracking-wide">Drop PDF or Click to browse</p>
             <input type="file" id="fileInput" class="hidden" accept=".pdf" onchange="handleFileSelect(event)">
         </label>
@@ -125,7 +122,6 @@ nav.custom-nav {
         <button id="analyzeBtn" class="btn" onclick="analyzeResume()" disabled>Start Analysis</button>
     </div>
 
-    <!-- LOADING STATE -->
     <div id="loadingState" class="hidden py-8">
         <div class="text-xl font-bold mb-2 animate-pulse text-blue-400">Deep AI Processing...</div>
         <p class="text-gray-500 text-sm">Extracting semantics, matches, and career gaps.</p>

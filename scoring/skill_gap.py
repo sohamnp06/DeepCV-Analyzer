@@ -73,9 +73,9 @@ def generate_skill_gap(semantic_result):
         recommendations.append("Broaden your programming polyglot skills by learning highly-scalable languages like Go or Rust.")
 
     if not recommendations:
-        recommendations.append("🚀 **Strategic Focus:** Your core profile is exceptionally strong. To move into the top 1% of applicants, we recommend focusing on 'Strategic Leadership'—this involves mentoring team members, leading open-source initiatives, and mastering High-Level System Design (HLD) to demonstrate you can architect entire platforms, not just code features.")
+        recommendations.append("**Strategic Focus:** Your core profile is exceptionally strong. To move into the top 1% of applicants, we recommend focusing on Strategic Leadership—this involves mentoring team members, leading open-source initiatives, and mastering High-Level System Design (HLD) to demonstrate you can architect entire platforms, not just code features.")
     else:
-        recommendations.append("💼 **Career Roadmap:** Your technical baseline is solid. Focus on bridging the categorical gaps identified above and quantifying your impact more heavily using the STAR method (metrics-based results).")
+        recommendations.append("**Career Roadmap:** Your technical baseline is solid. Focus on bridging the categorical gaps identified above and quantifying your impact more heavily using the STAR method (metrics-based results).")
 
     result["recommendations"] = recommendations
     return result

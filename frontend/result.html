@@ -16,7 +16,6 @@ body {
   overflow-x: hidden;
 }
 
-/* 🔥 THE ORIGINAL BLUE GRID UI 🔥 */
 .hero-grid {
   position: fixed;
   inset: 0;
@@ -37,7 +36,6 @@ body {
   filter: drop-shadow(0 0 10px rgba(59,130,246,0.5));
 }
 
-/* Glass Navbar */
 nav.custom-nav {
   position: fixed;
   top: 24px;
@@ -129,7 +127,6 @@ nav.custom-nav {
   color: #f87171;
 }
 
-/* TERMINAL VIEW FOR RAW LOGS */
 .terminal-view {
   background: #111111;
   border: 1px solid #333;
@@ -147,7 +144,6 @@ nav.custom-nav {
 .terminal-view::-webkit-scrollbar { width: 8px; }
 .terminal-view::-webkit-scrollbar-track { background: #111; }
 .terminal-view::-webkit-scrollbar-thumb { background: #333; border-radius: 4px; }
-
 
 @media print {
   body { background: white !important; color: black !important; }
@@ -169,7 +165,6 @@ nav.custom-nav {
   .score-hero { color: black !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
   .text-blue-400, .text-green-400, .text-red-400, .text-white, .desc-text { color: #000 !important; }
 
-  /* 📄 FORCE TWO PAGES 📄 */
   .print-page-break { page-break-after: always; }
   .print-only { display: block !important; }
   .no-screen { display: block !important; }
@@ -184,7 +179,6 @@ nav.custom-nav {
 
 <div class="hero-grid"></div>
 
-<!-- NAVBAR (ALL PAGES EXCEPT HOME) -->
 <nav class="custom-nav">
   <h1 class="text-md font-semibold">DeepCV Analyzer</h1>
   <div class="flex space-x-8 text-sm font-medium">
@@ -194,10 +188,9 @@ nav.custom-nav {
 </nav>
 
 <div class="report-content">
-  <!-- START PAGE 1 WRAPPER (Print View) -->
-  <div class="print-page-break">
   
-  <!-- 🔥 DEEP VERBAL REPORT SECTION 🔥 -->
+  <div class="print-page-break">
+
   <div class="card">
     <span class="label-blue">Deep AI Verbal Analysis</span>
     <div class="flex flex-col md:flex-row items-baseline gap-8 mb-8 mt-4">
@@ -225,7 +218,6 @@ nav.custom-nav {
       </div>
   </div>
 
-
   <div class="card mb-8 bg-red-500/5 border-red-500/20">
       <span class="label-blue text-red-400">Areas for Improvement</span>
       <div class="tag-cloud my-6" id="missingTags"></div>
@@ -233,13 +225,7 @@ nav.custom-nav {
   </div>
 
   <div class="card space-y-12 mb-8">
-      <h3 class="text-3xl font-bold border-b border-white/5 pb-6">Section strength (education, experience, projects)</h3>
-
-      <div>
-          <span class="label-blue">Education</span>
-          <h4 class="text-xl font-bold mb-2">Strength: <span id="eduGrade" class="text-blue-400">---</span></h4>
-          <div class="desc-text" id="eduVerbal"></div>
-      </div>
+      <h3 class="text-3xl font-bold border-b border-white/5 pb-6">Section strength (experience, projects)</h3>
 
       <div>
           <span class="label-blue">Experience</span>
@@ -261,18 +247,14 @@ nav.custom-nav {
       <div id="recommendationsNarrative" class="desc-text"></div>
       <ul id="strategyList" class="desc-text list-disc pl-6 space-y-4 hidden"></ul>
   </div>
-  </div> <!-- END PAGE 1 WRAPPER -->
-  
-  <!-- PAGE 2 START -->
+  </div> 
 
-  <!-- 🔥 FULL NARRATIVE REPORT (PRINT ONLY) 🔥 -->
   <div class="card mb-8 no-screen print-only no-print-padding">
       <span class="label-blue">Full Narrative Analysis Report</span>
       <p class="desc-text text-sm text-gray-500 mb-4">A complete technical breakdown of the candidate's profile compiled by ATS AI.</p>
       <div id="fullReportText" class="desc-text leading-relaxed space-y-4"></div>
   </div>
 
-  <!-- OPTIONS -->
   <div class="flex flex-wrap gap-6 mt-12 mb-20 no-print">
       <button onclick="window.print()" class="btn">Download Full Report</button>
       <a href="upload.html" class="btn btn-outline">Analyze Another Resume</a>
@@ -286,9 +268,9 @@ nav.custom-nav {
 
     function formatInlineBold(text) {
         if (!text) return "";
-        // Handle bold **text**
+        
         let formatted = text.replace(/\*\*(.+?)\*\*/g, "<strong class=\"text-white font-semibold\">$1</strong>");
-        // Handle `code`
+        
         formatted = formatted.replace(/`(.+?)`/g, "<code class=\"bg-white/10 px-1 rounded text-blue-300 font-mono\">$1</code>");
         return formatted;
     }
@@ -300,25 +282,23 @@ nav.custom-nav {
             let line = block.trim();
             if (!line) return "";
 
-            // Handle ### header
             if (line.startsWith("### ")) {
                 return "<h4 class=\"text-lg font-bold text-blue-400 mt-6 mb-2\">" + formatInlineBold(line.substring(4)) + "</h4>";
             }
-            // Handle ## header
+            
             if (line.startsWith("## ")) {
                 return "<h3 class=\"text-xl font-extrabold text-white mt-8 mb-4 border-b border-white/10 pb-2\">" + formatInlineBold(line.substring(3)) + "</h3>";
             }
-            // Handle blockquote
+            
             if (line.startsWith("> ")) {
                 return "<div class=\"border-l-4 border-gray-600 pl-4 py-1 my-4 italic text-gray-400 bg-white/5 rounded-r\">" + formatInlineBold(line.substring(2)) + "</div>";
             }
-            // Handle bullet points
+            
             if (line.startsWith("- ") || line.startsWith("• ") || line.startsWith("* ")) {
                 const items = line.split(/\n/).map(li => "<li>" + formatInlineBold(li.replace(/^[-•*]\s*/, "")) + "</li>").join("");
                 return "<ul class=\"list-disc pl-6 space-y-2 my-4\">" + items + "</ul>";
             }
 
-            // Default paragraph
             return "<p class=\"mb-4 leading-relaxed\">" + formatInlineBold(line) + "</p>";
         }).join("");
     }
@@ -343,7 +323,6 @@ nav.custom-nav {
             if (document.getElementById("atsNarrative")) document.getElementById("atsNarrative").innerHTML = paragraphsHtml(n.ats_matcher);
             if (document.getElementById("jdNarrative")) document.getElementById("jdNarrative").innerHTML = paragraphsHtml(n.jd_matcher);
             if (document.getElementById("skillGapNarrative")) document.getElementById("skillGapNarrative").innerHTML = paragraphsHtml(n.skill_gap);
-            if (document.getElementById("eduVerbal")) document.getElementById("eduVerbal").innerHTML = paragraphsHtml(n.education);
             if (document.getElementById("expVerbal")) document.getElementById("expVerbal").innerHTML = paragraphsHtml(n.experience);
             if (document.getElementById("projVerbal")) document.getElementById("projVerbal").innerHTML = paragraphsHtml(n.projects);
             if (document.getElementById("recommendationsNarrative")) document.getElementById("recommendationsNarrative").innerHTML = paragraphsHtml(n.recommendations_paragraph);
@@ -361,13 +340,11 @@ nav.custom-nav {
             if (sts === "Moderate") return "This section is present but would benefit from more metrics and role keywords.";
             return "This section is thin; expand with concrete outcomes and keywords.";
         };
-        document.getElementById("eduVerbal").textContent = fallback(data.section_quality.education);
         document.getElementById("expVerbal").textContent = fallback(data.section_quality.experience);
         document.getElementById("projVerbal").textContent = fallback(data.section_quality.projects);
     }
 
     if (data.section_quality) {
-        document.getElementById("eduGrade").innerText = data.section_quality.education || "N/A";
         document.getElementById("expGrade").innerText = data.section_quality.experience || "N/A";
         document.getElementById("projGrade").innerText = data.section_quality.projects || "N/A";
     }

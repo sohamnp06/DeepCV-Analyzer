@@ -7,7 +7,6 @@ from psycopg2.extras import RealDictCursor
 
 from config import load_env_file
 
-# Load environment variables
 load_env_file()
 
 logger = logging.getLogger(__name__)
@@ -19,26 +18,19 @@ def _env(name, default=None):
     return value
 
 def get_db_connection():
-    """
-    Creates and returns a connection to the PostgreSQL database.
-    Supports both DATABASE_URL (Supabase/Render) and individual parameters.
-    Ensures SSL is required for secure connections.
-    """
     database_url = os.getenv("DATABASE_URL")
-    
+
     try:
         if database_url:
-            # If using Supabase Pooler, the connection string is already configured correctly
             return psycopg2.connect(database_url)
 
-        # Fallback to individual parameters
         return psycopg2.connect(
             dbname=_env("POSTGRES_DB", "resume_tracker_db"),
             user=_env("POSTGRES_USER", "postgres"),
             password=_env("POSTGRES_PASSWORD", ""),
             host=_env("POSTGRES_HOST", "localhost"),
             port=_env("POSTGRES_PORT", "5432"),
-            sslmode='require' # Always recommend SSL for cloud DBs
+            sslmode='require'
         )
     except Exception as e:
         logger.error(f"Database connection error: {e}")
@@ -49,13 +41,11 @@ def _hash_password(password):
     return hashlib.sha256(f"{secret}:{password}".encode("utf-8")).hexdigest()
 
 def init_db():
-    """Initializes the database schema matching the user's Supabase tables."""
     conn = None
     try:
         conn = get_db_connection()
         cursor = conn.cursor()
-        
-        # User Authentication Table (matching your schema: password instead of password_hash)
+
         cursor.execute(
             """
             CREATE TABLE IF NOT EXISTS users (
@@ -66,8 +56,7 @@ def init_db():
             );
             """
         )
-        
-        # Resume Analysis Results Table (matching your schema: JSONB for skills)
+
         cursor.execute(
             """
             CREATE TABLE IF NOT EXISTS resume_analysis (
@@ -101,7 +90,6 @@ def register_user(username, password):
     conn = get_db_connection()
     try:
         cursor = conn.cursor()
-        # Using 'password' column name to match your Supabase schema
         cursor.execute(
             "INSERT INTO users (username, password) VALUES (%s, %s) RETURNING id",
             (username, _hash_password(password)),
@@ -116,7 +104,6 @@ def login_user(username, password):
     conn = get_db_connection()
     try:
         cursor = conn.cursor(cursor_factory=RealDictCursor)
-        # Using 'password' column name to match your Supabase schema
         cursor.execute(
             "SELECT id, username FROM users WHERE username=%s AND password=%s",
             (username, _hash_password(password)),
@@ -137,7 +124,6 @@ def check_user_exists(username):
         conn.close()
 
 def insert_result(user_id, data):
-    """Saves detailed analysis to the resume_analysis table matching JSONB schema."""
     conn = get_db_connection()
     try:
         cursor = conn.cursor()
@@ -150,8 +136,7 @@ def insert_result(user_id, data):
         )
         VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
         """
-        
-        # Convert lists to JSON strings so psycopg2 can insert them into JSONB columns
+
         matched_json = json.dumps(data["matched_skills"]) if isinstance(data["matched_skills"], list) else data["matched_skills"]
         missing_json = json.dumps(data["missing_skills"]) if isinstance(data["missing_skills"], list) else data["missing_skills"]
 

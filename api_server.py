@@ -70,7 +70,6 @@ async def lifespan(app: FastAPI):
     start_time = time.time()
     logger.info("Initializing application resources...")
     
-    # Start AI engine loading in background so port opens IMMEDIATELY
     asyncio.create_task(preload_engines())
     
     try:
@@ -125,7 +124,6 @@ def infer_role(resume_text):
 
 @app.get("/db-test")
 async def db_test():
-    """Returns DB connectivity check."""
     try:
         conn = get_db_connection()
         cursor = conn.cursor()
@@ -164,7 +162,6 @@ def _ensure_ready():
         raise HTTPException(status_code=503, detail="AI Engines still preloading on Render. Please wait 30 seconds.")
 
 async def get_credentials(request: Request, username: str, password: str):
-    """Gracefully extracts username and password from either JSON or Form data."""
     if username and password:
         return username.strip(), password
     try:
